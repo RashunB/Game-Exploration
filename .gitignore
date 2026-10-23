@@ -1,0 +1,35 @@
+# Unreal build output and caches
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+Plugins/**/Binaries/
+Plugins/**/Intermediate/
+
+# Packaging output; per-platform icons and pak lists placed under Build/ stay tracked
+Build/*
+!Build/*/
+Build/*/**
+!Build/**/*.ico
+!Build/*/PakBlacklist*.txt
+
+# Generated IDE files
+.vs/
+.vscode/
+.idea/
+*.sln
+*.slnx
+*.suo
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
+*.code-workspace
+
+# Claude Code per-user settings
+.claude/settings.local.json
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
