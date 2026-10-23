@@ -126,6 +126,7 @@ Headers are included by path from the module root, for example `#include "Vehicl
 - Handling profiles as DataAssets: Street (getaway), Drift (takeover), Stripped (dump, on rims, degraded grip and power). Swap profiles at runtime by phase.
 - Chaos exposes runtime setters for some values (torque, friction multipliers, drag), but wheel setup lives on wheel class defaults. In M1, confirm which profile fields apply live. Fields that don't get applied by recreating the vehicle's physics state at a point where the car is slow or stopped: the arena entry trigger and the chop shop.
 - The hero car is a BP subclass of `ATakeoverVehiclePawn` that reuses a City Sample vehicle's mesh, physics asset, and wheel animation. It does not reuse the City Sample vehicle Blueprint.
+- Give the hero car its own wheel classes, not shared with police or traffic cars. Epic issue UE-274631 reports per-car wheel configuration writing to the shared wheel class defaults, which would leak handling changes between cars.
 - Expect real tuning time. Drift feel is iteration with the user, not something to mark done from code alone.
 
 ### Persistence
@@ -157,14 +158,15 @@ Each phase lists the Early Access scope and acceptance criteria. Anything not li
 
 - Arena: one intersection or parking lot with a crowd ring defined by a spline.
 - `UTakeoverScoringComponent` on the vehicle feeds vehicle state each tick into `FTakeoverScoringModel`, a plain struct with no world access, so the scoring math is covered by automation tests. All thresholds live on a `UTakeoverScoringConfig` DataAsset. Tunable defaults:
-  - Slip angle is the angle between the car's forward vector and its velocity in the ground plane. It only counts above a minimum speed (default 20 km/h) so low-speed jitter doesn't score.
+  - Slip angle is the angle between the car's forward vector and its velocity in the ground plane. It only counts above a minimum speed (default 20 km/h) so low-speed jitter doesn't score. Above 100 degrees the car is spinning out or reversing, which is not a drift.
   - Each tick the car is in exactly one scoring state, checked in priority order: Donut, Drift, Burnout, None. A donut also has a high slip angle, and the priority keeps it from scoring twice.
-  - Drift points per second = (slip angle above 15 degrees) x speed factor x proximity multiplier.
-  - Proximity multiplier rises as the car gets closer to the crowd spline without contact.
-  - Combo multiplier increments every 2 seconds of continuous scoring (any state other than None), breaks on collision or after 1.5 seconds in None.
-  - Donut detection: sustained yaw rate above a threshold with low linear speed.
-  - Burnout: throttle plus brake at low speed, scored by duration.
-  - Hitting a crowd member ends the combo and adds heat.
+  - Drift points per second = (slip angle above 15 degrees) x speed factor x proximity multiplier. Speed factor is speed / 60 km/h, capped at 3.
+  - Proximity multiplier rises from 1 at 15 m from the crowd spline to 3 at 2 m. It applies to drifts, donuts, and burnouts, since performing close to the crowd is the point of a takeover.
+  - Combo multiplier increments every 2 seconds of continuous scoring (any state other than None), breaks on collision or after 1.5 seconds in None, capped at x10. All points are multiplied by it.
+  - Donut detection: yaw rate above 120 deg/s, speed at most 30 km/h, and throttle held (so a spin-out after a crash doesn't score). Flat 40 points per second.
+  - Burnout: throttle plus brake at low speed, scored by duration. Flat 20 points per second.
+  - Collisions below an impulse threshold, and ground contact, don't break the combo.
+  - Hitting a crowd member ends the combo and adds heat (heat hooks into the scoring component's crowd hit event in M2).
 - Raid timer: when heat hits tier 3 during the takeover, police arrive and the player must leave. Leaving with a high score banks rep. Needs heat, so it lands in M2, not M1.
 - Event: one drift event (score attack along a marked line) or one sprint race against simple AI. Recommendation: drift event. It reuses the scoring model, while a race needs AI drivers on Chaos, the same hard problem as police AI. Decide at the M1 gate.
 - Feedback: score popups, combo meter, crowd cheer audio scaled to combo, phone-flash particles from the crowd, tire smoke and skid marks. M1 only needs a debug score/combo readout, tire smoke, and skid marks. The crowd is placeholder meshes on the spline until the art pass.
@@ -218,6 +220,14 @@ Estimates assume one developer full-time with Claude doing most of the code. Par
    - On the Windows machine: install the toolchain, run `git lfs install`, build the editor target, open the editor and confirm MCP responds (`/mcp` shows `unreal-mcp`, `list_toolsets` returns), create Input Actions and Mapping Contexts with keyboard/mouse and gamepad bindings, create the greybox lot map (World Partition, One File Per Actor), confirm City Sample Vehicles on 5.8, run the smoke test from the command line.
    - Acceptance: a fresh clone builds, the editor opens, MCP responds to a read-only tool call, `Takeover.Smoke` passes from the command line, and the greybox map loads.
 2. M1, weeks 2 to 4. Vehicle pawn with the Drift profile, scoring model, component, and tests, placeholder crowd spline, debug feedback. Gate: user confirms it is fun.
+   - Code (first pass written, not yet compiled): `ATakeoverGameMode`, `ATakeoverPlayerController`, `UTakeoverInputConfig`, `ATakeoverVehiclePawn`, `UTakeoverHandlingProfile`, `FTakeoverScoringModel`, `UTakeoverScoringConfig`, `UTakeoverScoringComponent`, `ATakeoverArena`, `ATakeoverDebugHUD`, `Takeover.Scoring.Model` tests.
+   - Editor side, in `Content/Takeover/`:
+     - `Input/`: `IA_Throttle`, `IA_Brake`, `IA_Steer` (Axis1D), `IA_Handbrake`, `IA_ResetVehicle` (Digital), `IA_LookAround` (Axis1D), and `IMC_Vehicle` binding all of them to keyboard/mouse and gamepad.
+     - `Data/`: `DA_InputConfig` (UTakeoverInputConfig), `DA_Handling_Drift` (UTakeoverHandlingProfile), `DA_Scoring` (UTakeoverScoringConfig).
+     - `Blueprints/`: `BP_HeroCar` (ATakeoverVehiclePawn: mesh, wheel classes, `DA_Handling_Drift`, `DA_Scoring` on the Scoring component), `BP_Arena` (ATakeoverArena: placeholder mesh such as the engine cylinder), `BP_TakeoverPlayerController` (`DA_InputConfig`), `BP_TakeoverGameMode` (default pawn `BP_HeroCar`, controller `BP_TakeoverPlayerController`).
+     - `Maps/`: greybox lot with `BP_Arena` placed and `BP_TakeoverGameMode` as the world's game mode.
+     - Tire smoke and skid marks (Niagara) after the car drives.
+   - Not yet built: a physical burnout. Scoring detects throttle plus brake, but with default wheel setup Chaos brakes every wheel, so the rears probably won't spin. Check in the first drive, and if so, brake only the front axle while both are held.
 3. M2, week 5. Mission subsystem, loop state, progress subsystem and save game, heat, raid timer, HUD (heat meter, score, objective text, minimap).
 4. M3, weeks 6 to 7. Break-in phase, on-foot character, pawn swap into the car.
 5. M4, weeks 8 to 9. Getaway pursuit and dump phase.
@@ -249,4 +259,5 @@ Resolved:
 
 ## 12. Revision history
 
+- 2026-10-23 (M1 start): Scoring spec filled in to match the first-pass code: max drift angle, speed factor, proximity applies to all scoring states, combo cap and multiplier, donut throttle requirement, collision filtering. M1 editor-side asset list added. Hero car gets its own wheel classes.
 - 2026-10-23: Engine 5.7 to 5.8, since Unreal MCP ships with 5.8. Added the development environment section (local vs cloud sessions, toolchain, LFS budget, MCP cautions). Added the world and lifetime model, `FMissionLoopState`, `UMissionConfig`, and the player and input architecture. Defined slip angle and scoring state priority, and extended the combo to all scoring states. Moved gamepad bindings from M6 to M0. M4 extended from one week to two, total schedule 13 weeks. Anchored the Steam timeline to the release week and added the AI disclosure rule. Folder layout: `Takeover/` renamed to `Arena/` to avoid `Source/Takeover/Takeover/`, added `Player/`, `Tests/`, `Content/Takeover/Input/`, `Content/Takeover/UI/`, and third-party content stays at its migrated path. Corrected the tone reference to Hood Warfare 2. Added version caveats for Easy Vehicle System and Drift AI. Working rules moved to `CLAUDE.md`.
