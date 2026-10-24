@@ -38,6 +38,9 @@ void ATakeoverArena::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
+	// Spline edits made by setting points directly (tools, scripts) leave the length table stale until this runs
+	CrowdSpline->UpdateSpline();
+
 	CrowdPlaceholders->ClearInstances();
 
 	const float SplineLength = CrowdSpline->GetSplineLength();
