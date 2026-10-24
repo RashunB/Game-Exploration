@@ -7,6 +7,7 @@
 class UCameraComponent;
 class UChaosWheeledVehicleMovementComponent;
 class USpringArmComponent;
+class UStaticMeshComponent;
 class UTakeoverHandlingProfile;
 class UTakeoverScoringComponent;
 struct FInputActionValue;
@@ -48,6 +49,29 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Scoring")
 	TObjectPtr<UTakeoverScoringComponent> Scoring;
 
+	/**
+	 * Visual parts for cars whose skeletal mesh only carries the wheel rig, like the vehicle template's
+	 * SportsCar. Visual only, no collision. Leave a mesh unset on the Blueprint to hide that part.
+	 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Visuals")
+	TObjectPtr<UStaticMeshComponent> BodyMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Visuals")
+	TObjectPtr<UStaticMeshComponent> GlassMesh;
+
+	/** Attached to the wheel bones so they spin and steer with the rig. Change the parent socket on the Blueprint for other rigs. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Visuals")
+	TObjectPtr<UStaticMeshComponent> WheelMeshFL;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Visuals")
+	TObjectPtr<UStaticMeshComponent> WheelMeshFR;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Visuals")
+	TObjectPtr<UStaticMeshComponent> WheelMeshRL;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Visuals")
+	TObjectPtr<UStaticMeshComponent> WheelMeshRR;
+
 	/** Applied on BeginPlay */
 	UPROPERTY(EditDefaultsOnly, Category = "Handling")
 	TObjectPtr<UTakeoverHandlingProfile> DefaultHandlingProfile;
@@ -69,6 +93,7 @@ protected:
 
 private:
 	UChaosWheeledVehicleMovementComponent* GetChaosMovement() const;
+	UStaticMeshComponent* CreateVisualMesh(FName Name, FName ParentSocket);
 
 	void Throttle(const FInputActionValue& Value);
 	void Brake(const FInputActionValue& Value);

@@ -3,6 +3,8 @@
 #include "Arena/TakeoverScoringComponent.h"
 #include "Camera/CameraComponent.h"
 #include "ChaosVehicleWheel.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/CollisionProfile.h"
 #include "ChaosWheeledVehicleMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -37,6 +39,28 @@ ATakeoverVehiclePawn::ATakeoverVehiclePawn()
 	Camera->bUsePawnControlRotation = false;
 
 	Scoring = CreateDefaultSubobject<UTakeoverScoringComponent>(TEXT("Scoring"));
+
+	// Socket names match the vehicle template's wheel rig
+	BodyMesh = CreateVisualMesh(TEXT("BodyMesh"), NAME_None);
+	GlassMesh = CreateVisualMesh(TEXT("GlassMesh"), NAME_None);
+	WheelMeshFL = CreateVisualMesh(TEXT("WheelMeshFL"), TEXT("Phys_Wheel_FL"));
+	WheelMeshFR = CreateVisualMesh(TEXT("WheelMeshFR"), TEXT("Phys_Wheel_FR"));
+	WheelMeshRL = CreateVisualMesh(TEXT("WheelMeshRL"), TEXT("Phys_Wheel_BL"));
+	WheelMeshRR = CreateVisualMesh(TEXT("WheelMeshRR"), TEXT("Phys_Wheel_BR"));
+
+	// One wheel mesh serves both sides, so the right-hand wheels face outward by turning around
+	WheelMeshFR->SetRelativeRotation(FRotator(0.f, 180.f, 0.f));
+	WheelMeshRR->SetRelativeRotation(FRotator(0.f, 180.f, 0.f));
+}
+
+UStaticMeshComponent* ATakeoverVehiclePawn::CreateVisualMesh(FName Name, FName ParentSocket)
+{
+	UStaticMeshComponent* Visual = CreateDefaultSubobject<UStaticMeshComponent>(Name);
+	Visual->SetupAttachment(GetMesh(), ParentSocket);
+	Visual->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
+	Visual->SetGenerateOverlapEvents(false);
+	Visual->SetCanEverAffectNavigation(false);
+	return Visual;
 }
 
 void ATakeoverVehiclePawn::BeginPlay()
