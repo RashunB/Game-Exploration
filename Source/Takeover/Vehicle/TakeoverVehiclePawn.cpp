@@ -23,6 +23,19 @@ namespace
 
 	constexpr float TelemetryHz = 4.f;
 
+	/** Chaos vehicles don't override IsMovingOnGround, which always returns false, so ask the wheels */
+	bool IsAnyWheelOnGround(const UChaosWheeledVehicleMovementComponent& Movement)
+	{
+		for (int32 WheelIndex = 0; WheelIndex < Movement.Wheels.Num(); ++WheelIndex)
+		{
+			if (Movement.GetWheelState(WheelIndex).bInContact)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/** One line per sample: driver inputs, drivetrain, scoring, then per-wheel contact and slip in WheelSetups order */
 	void LogTelemetry(const ATakeoverVehiclePawn& Vehicle, UChaosWheeledVehicleMovementComponent& Movement)
 	{
@@ -144,7 +157,7 @@ void ATakeoverVehiclePawn::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	GetMesh()->SetAngularDamping(GetChaosMovement()->IsMovingOnGround() ? 0.f : AirborneAngularDamping);
+	GetMesh()->SetAngularDamping(IsAnyWheelOnGround(*GetChaosMovement()) ? 0.f : AirborneAngularDamping);
 
 	const float CameraYaw = static_cast<float>(SpringArm->GetRelativeRotation().Yaw);
 	SpringArm->SetRelativeRotation(FRotator(0.f, FMath::FInterpTo(CameraYaw, 0.f, DeltaSeconds, CameraRecenterSpeed), 0.f));
