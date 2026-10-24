@@ -227,6 +227,7 @@ Estimates assume one developer full-time with Claude doing most of the code. Par
      - `Blueprints/`: `BP_HeroCar` (ATakeoverVehiclePawn: mesh, wheel classes, `DA_Handling_Drift`, `DA_Scoring` on the Scoring component), `BP_Arena` (ATakeoverArena: placeholder mesh such as the engine cylinder), `BP_TakeoverPlayerController` (`DA_InputConfig`), `BP_TakeoverGameMode` (default pawn `BP_HeroCar`, controller `BP_TakeoverPlayerController`).
      - `Maps/`: greybox lot with `BP_Arena` placed and `BP_TakeoverGameMode` as the world's game mode.
      - Tire smoke and skid marks (Niagara) after the car drives.
+   - Editor side status (2026-10-24): all of the above except Niagara exists and spawns cleanly in PIE. `BP_HeroCar` uses the vehicle template's SportsCar as a stand-in mesh until City Sample Vehicles is migrated. Handbrake is bound to both Gamepad A and RB until the playtest picks one. `L_Greybox` uses a flat ground slab instead of the template landscape, which did not survive duplication. Driving feel is untested.
    - Not yet built: a physical burnout. Scoring detects throttle plus brake, but with default wheel setup Chaos brakes every wheel, so the rears probably won't spin. Check in the first drive, and if so, brake only the front axle while both are held.
 3. M2, week 5. Mission subsystem, loop state, progress subsystem and save game, heat, raid timer, HUD (heat meter, score, objective text, minimap).
 4. M3, weeks 6 to 7. Break-in phase, on-foot character, pawn swap into the car.
@@ -259,6 +260,7 @@ Resolved:
 
 ## 12. Revision history
 
+- 2026-10-24: M1 editor assets created through MCP (status under M1). Stand-in hero car is the vehicle template's SportsCar.
 - 2026-10-24: Enabled `LiveCodingToolset` (Editor target only), since `AllToolsets` does not include it and `CLAUDE.md` relies on `LiveCodingToolset.CompileLiveCoding`. M1 code status updated: first compile clean, 24 `Takeover.*` tests pass.
 - 2026-10-23 (M1 start): Scoring spec filled in to match the first-pass code: max drift angle, speed factor, proximity applies to all scoring states, combo cap and multiplier, donut throttle requirement, collision filtering. M1 editor-side asset list added. Hero car gets its own wheel classes.
 - 2026-10-23: Engine 5.7 to 5.8, since Unreal MCP ships with 5.8. Added the development environment section (local vs cloud sessions, toolchain, LFS budget, MCP cautions). Added the world and lifetime model, `FMissionLoopState`, `UMissionConfig`, and the player and input architecture. Defined slip angle and scoring state priority, and extended the combo to all scoring states. Moved gamepad bindings from M6 to M0. M4 extended from one week to two, total schedule 13 weeks. Anchored the Steam timeline to the release week and added the AI disclosure rule. Folder layout: `Takeover/` renamed to `Arena/` to avoid `Source/Takeover/Takeover/`, added `Player/`, `Tests/`, `Content/Takeover/Input/`, `Content/Takeover/UI/`, and third-party content stays at its migrated path. Corrected the tone reference to Hood Warfare 2. Added version caveats for Easy Vehicle System and Drift AI. Working rules moved to `CLAUDE.md`.

@@ -6,6 +6,8 @@ All notable changes to this project. Format follows [Keep a Changelog](https://k
 
 ### Added
 
+- M1 editor assets, created through Unreal MCP: `IA_Throttle`, `IA_Brake`, `IA_Steer`, `IA_LookAround`, `IA_Handbrake`, `IA_ResetVehicle`, and `IMC_Vehicle` (keyboard/mouse and gamepad; handbrake on Space, Gamepad A, and Gamepad RB); `DA_InputConfig`, `DA_Handling_Drift`, `DA_Scoring`; `BP_HeroCar` with its own `BP_HeroCar_WheelFront`/`BP_HeroCar_WheelRear`, `BP_Arena`, `BP_TakeoverPlayerController`, `BP_TakeoverGameMode`; `L_Greybox` (World Partition, One File Per Actor, flat 500 m ground slab) set as the editor startup and game default map.
+- Stand-in hero car: the UE 5.8 vehicle template's SportsCar at `/Game/Vehicles/SportsCar`, copied unchanged from the engine install. Engine template content, not AI-generated.
 - `LiveCodingToolset` plugin enabled for the Editor target, so Live Coding compiles can run over Unreal MCP.
 - Editor-generated `Config/DefaultEngine.ini` and `Config/DefaultInput.ini` (Enhanced Input default classes).
 - M1 code core, first pass, compiles clean on UE 5.8.4 with all `Takeover.*` tests passing: `ATakeoverGameMode`, `ATakeoverPlayerController` (mapping context per pawn), `UTakeoverInputConfig`, `ATakeoverVehiclePawn` (Enhanced Input driving, chase camera, reset), `UTakeoverHandlingProfile` (runtime Chaos setters), `FTakeoverScoringModel` and `UTakeoverScoringConfig` (drift, donut, burnout, proximity, combo), `UTakeoverScoringComponent` (vehicle sampling, collision and crowd hit detection), `ATakeoverArena` (crowd spline with placeholder meshes), `ATakeoverDebugHUD`, `Takeover.Scoring.Model` automation spec.
