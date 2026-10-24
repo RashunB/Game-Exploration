@@ -48,9 +48,12 @@ ATakeoverVehiclePawn::ATakeoverVehiclePawn()
 	WheelMeshRL = CreateVisualMesh(TEXT("WheelMeshRL"), TEXT("Phys_Wheel_BL"));
 	WheelMeshRR = CreateVisualMesh(TEXT("WheelMeshRR"), TEXT("Phys_Wheel_BR"));
 
-	// One wheel mesh serves both sides, so the right-hand wheels face outward by turning around
-	WheelMeshFR->SetRelativeRotation(FRotator(0.f, 180.f, 0.f));
-	WheelMeshRR->SetRelativeRotation(FRotator(0.f, 180.f, 0.f));
+	// The template's wheel bones point their Y axis up, so the wheel mesh (axle on Y) is turned onto the axle.
+	// One wheel mesh serves both sides: left and right turn opposite ways so both rims face outward.
+	WheelMeshFL->SetRelativeRotation(FRotator(0.f, 90.f, 0.f));
+	WheelMeshRL->SetRelativeRotation(FRotator(0.f, 90.f, 0.f));
+	WheelMeshFR->SetRelativeRotation(FRotator(0.f, -90.f, 0.f));
+	WheelMeshRR->SetRelativeRotation(FRotator(0.f, -90.f, 0.f));
 }
 
 UStaticMeshComponent* ATakeoverVehiclePawn::CreateVisualMesh(FName Name, FName ParentSocket)
