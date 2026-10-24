@@ -37,14 +37,14 @@ namespace
 	}
 
 	/** One line per sample: driver inputs, drivetrain, scoring, then per-wheel contact and slip in WheelSetups order */
-	void LogTelemetry(const ATakeoverVehiclePawn& Vehicle, UChaosWheeledVehicleMovementComponent& Movement)
+	void LogTelemetry(const ATakeoverVehiclePawn& Vehicle, UChaosWheeledVehicleMovementComponent& Movement, float DeltaSeconds)
 	{
 		const UTakeoverScoringComponent* Scoring = Vehicle.GetScoring();
 		const FTakeoverScoringTickResult& Result = Scoring->GetLastResult();
 
 		FString Line = FString::Printf(
-			TEXT("Telemetry speed=%.0f gear=%d rpm=%.0f thr=%.2f brk=%.2f steer=%.2f hb=%d slip=%.0f state=%s score=%.0f combo=%d |"),
-			Result.SpeedKmh, Movement.GetCurrentGear(), Movement.GetEngineRotationSpeed(),
+			TEXT("Telemetry fps=%.0f speed=%.0f gear=%d rpm=%.0f thr=%.2f brk=%.2f steer=%.2f hb=%d slip=%.0f state=%s score=%.0f combo=%d |"),
+			DeltaSeconds > 0.f ? 1.f / DeltaSeconds : 0.f, Result.SpeedKmh, Movement.GetCurrentGear(), Movement.GetEngineRotationSpeed(),
 			Movement.GetThrottleInput(), Movement.GetBrakeInput(), Movement.GetSteeringInput(), Movement.GetHandbrakeInput() ? 1 : 0,
 			Result.SlipAngleDeg, *UEnum::GetDisplayValueAsText(Scoring->GetState()).ToString(), Scoring->GetScore(), Scoring->GetCombo());
 
@@ -166,7 +166,7 @@ void ATakeoverVehiclePawn::Tick(float DeltaSeconds)
 	const double Now = GetWorld()->GetTimeSeconds();
 	if (CVarTelemetry.GetValueOnGameThread() && FMath::FloorToInt(Now * TelemetryHz) != FMath::FloorToInt((Now - DeltaSeconds) * TelemetryHz))
 	{
-		LogTelemetry(*this, *GetChaosMovement());
+		LogTelemetry(*this, *GetChaosMovement(), DeltaSeconds);
 	}
 }
 
