@@ -14,6 +14,40 @@
 #include "Takeover.h"
 #include "Vehicle/TakeoverHandlingProfile.h"
 
+namespace
+{
+	TAutoConsoleVariable<bool> CVarTelemetry(
+		TEXT("takeover.Telemetry"),
+		true,
+		TEXT("Log driving telemetry to LogTakeover a few times a second, for tuning playtests"));
+
+	constexpr float TelemetryHz = 4.f;
+
+	/** One line per sample: driver inputs, drivetrain, scoring, then per-wheel contact and slip in WheelSetups order */
+	void LogTelemetry(const ATakeoverVehiclePawn& Vehicle, UChaosWheeledVehicleMovementComponent& Movement)
+	{
+		const UTakeoverScoringComponent* Scoring = Vehicle.GetScoring();
+		const FTakeoverScoringTickResult& Result = Scoring->GetLastResult();
+
+		FString Line = FString::Printf(
+			TEXT("Telemetry speed=%.0f gear=%d rpm=%.0f thr=%.2f brk=%.2f steer=%.2f hb=%d slip=%.0f state=%s score=%.0f combo=%d |"),
+			Result.SpeedKmh, Movement.GetCurrentGear(), Movement.GetEngineRotationSpeed(),
+			Movement.GetThrottleInput(), Movement.GetBrakeInput(), Movement.GetSteeringInput(), Movement.GetHandbrakeInput() ? 1 : 0,
+			Result.SlipAngleDeg, *UEnum::GetDisplayValueAsText(Scoring->GetState()).ToString(), Scoring->GetScore(), Scoring->GetCombo());
+
+		static const TCHAR* WheelNames[] = { TEXT("FL"), TEXT("FR"), TEXT("RL"), TEXT("RR") };
+		for (int32 WheelIndex = 0; WheelIndex < Movement.Wheels.Num(); ++WheelIndex)
+		{
+			const FWheelStatus& Wheel = Movement.GetWheelState(WheelIndex);
+			Line += FString::Printf(TEXT(" %s c=%d sa=%.0f sl=%.0f sk=%.0f dt=%.0f"),
+				WheelIndex < UE_ARRAY_COUNT(WheelNames) ? WheelNames[WheelIndex] : TEXT("W"),
+				Wheel.bInContact ? 1 : 0, Wheel.SlipAngle, Wheel.SlipMagnitude, Wheel.SkidMagnitude, Wheel.DriveTorque);
+		}
+
+		UE_LOG(LogTakeover, Log, TEXT("%s"), *Line);
+	}
+}
+
 ATakeoverVehiclePawn::ATakeoverVehiclePawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -114,6 +148,13 @@ void ATakeoverVehiclePawn::Tick(float DeltaSeconds)
 
 	const float CameraYaw = static_cast<float>(SpringArm->GetRelativeRotation().Yaw);
 	SpringArm->SetRelativeRotation(FRotator(0.f, FMath::FInterpTo(CameraYaw, 0.f, DeltaSeconds, CameraRecenterSpeed), 0.f));
+
+	// Sample whenever the clock crosses a TelemetryHz boundary, so the rate holds at any frame rate
+	const double Now = GetWorld()->GetTimeSeconds();
+	if (CVarTelemetry.GetValueOnGameThread() && FMath::FloorToInt(Now * TelemetryHz) != FMath::FloorToInt((Now - DeltaSeconds) * TelemetryHz))
+	{
+		LogTelemetry(*this, *GetChaosMovement());
+	}
 }
 
 void ATakeoverVehiclePawn::ApplyHandlingProfile(UTakeoverHandlingProfile* Profile)
