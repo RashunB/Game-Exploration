@@ -106,7 +106,7 @@ Headers are included by path from the module root, for example `#include "Vehicl
 - Each phase is a `UMissionPhase` subclass with `Enter()`, `Tick()`, `Exit()`, and `OnPhaseComplete` / `OnPhaseFailed` delegates. Phases do not reference each other. The subsystem wires them together.
 - Phase order and phase classes come from a `UMissionConfig` DataAsset.
 - `FMissionLoopState`, owned by the subsystem and handed to each phase on `Enter()`, carries what phases need from each other: the stolen vehicle, takeover score and rep earned, chop payout, and failure reason.
-- Failure (arrested, car destroyed) ends the loop with partial rewards. Proposed rule: rep already banked from the takeover is kept, and unbanked money is scaled by `FailureRewardFraction` on `UMissionConfig`.
+- Failure (arrested, car destroyed) ends the loop with partial rewards: rep already banked from the takeover is kept, and unbanked money is scaled by `FailureRewardFraction` on `UMissionConfig` (default 0.25).
 
 ### Player and input
 
@@ -169,7 +169,7 @@ Each phase lists the Early Access scope and acceptance criteria. Anything not li
   - Collisions below an impulse threshold, and ground contact, don't break the combo.
   - Hitting a crowd member ends the combo and adds heat (heat hooks into the scoring component's crowd hit event in M2).
 - Raid timer: when heat hits tier 3 during the takeover, police arrive and the player must leave. Leaving with a high score banks rep. Needs heat, so it lands in M2, not M1.
-- Event: one drift event (score attack along a marked line) or one sprint race against simple AI. Recommendation: drift event. It reuses the scoring model, while a race needs AI drivers on Chaos, the same hard problem as police AI. Decide at the M1 gate.
+- Event: one drift event (score attack along a marked line) or one sprint race against simple AI. Chosen at the M1 gate: drift event. It reuses the scoring model, while a race needs AI drivers on Chaos, the same hard problem as police AI.
 - Feedback: score popups, combo meter, crowd cheer audio scaled to combo, phone-flash particles from the crowd, tire smoke and skid marks. M1 only needs a debug score/combo readout, tire smoke, and skid marks. The crowd is placeholder meshes on the spline until the art pass.
 - Acceptance: the user playtests the greybox on gamepad and keyboard and confirms it is fun. This is a gate. Do not move past milestone M1 without that confirmation.
 
@@ -230,7 +230,15 @@ Estimates assume one developer full-time with Claude doing most of the code. Par
      - Tire smoke and skid marks (Niagara) after the car drives.
    - Editor side status (2026-10-24): all of the above except Niagara exists and spawns cleanly in PIE. `BP_HeroCar` uses the vehicle template's SportsCar as a stand-in mesh until City Sample Vehicles is migrated. Handbrake is bound to both Gamepad A and RB until the playtest picks one. `L_Greybox` uses a flat ground slab instead of the template landscape, which did not survive duplication. The crowd ring is a 120 x 70 m oval so there is a straight long enough to leave 1st gear. The lot is dressed as a night takeover intersection: two crossing avenues, 16 blocks of procedural-window towers, sidewalks, lane markings, 40 street lamps, 6 shadow-casting plaza floodlights, neon at street level, fixed night exposure. All engine shapes and authored materials, no Fab content yet. Handling is mid-tuning with telemetry (`takeover.Telemetry`).
    - Not yet built: a physical burnout. Scoring detects throttle plus brake, but with default wheel setup Chaos brakes every wheel, so the rears probably won't spin. Check in the first drive, and if so, brake only the front axle while both are held.
+   - Gate passed (2026-10-24): the user confirmed the takeover is fun and chose the drift event for the finale. Tire smoke, skid marks, and the burnout check carry over into M2.
 3. M2, week 5. Mission subsystem, loop state, progress subsystem and save game, heat, raid timer, HUD (heat meter, score, objective text, minimap).
+   - Acceptance:
+     - A full loop runs in `L_Greybox` through `UMissionSubsystem`: Idle, BreakIn, Getaway, Takeover, Chop, Dump, Complete. Every phase but Takeover is a stub that completes on a debug command until M3 to M5. Phase transitions are covered by automation tests.
+     - Heat: 0 to 100 with 4 tiers and hysteresis. Crowd hits and takeover duration add heat, and heat decays while unseen (line-of-sight stub until M4). Tier changes, hysteresis, and decay are covered by tests.
+     - Raid timer: tier 3 during the takeover starts a countdown. Leaving the arena before it ends banks rep converted from score. Running out means arrest: the loop fails with partial rewards (banked rep kept, unbanked money x `FailureRewardFraction`, default 0.25). Reward math is covered by tests.
+     - Money, rep, and loops completed survive a PIE restart (saved on loop end and on quit).
+     - HUD: heat meter, score and combo, objective text, raid countdown, and a minimap (top-down scene capture around the car with a player arrow and an objective marker; M4 adds police blips). The debug HUD moves behind a console variable.
+     - Heat rates and raid timing go to the user for a playtest. They are not marked done from code.
 4. M3, weeks 6 to 7. Break-in phase, on-foot character, pawn swap into the car.
 5. M4, weeks 8 to 9. Getaway pursuit and dump phase.
 6. M5, week 10. Chop menu and the takeover event.
@@ -248,9 +256,7 @@ See `CLAUDE.md`. Update this plan and `CHANGELOG.md` when scope changes.
 
 - Working title and fictional name for the hero car. The code name stays `Takeover` either way.
 - Art direction: realistic (City Sample look) or stylized. Affects the art pass and the LFS budget.
-- Drift event or race event for the takeover finale. Recommendation is drift. Decide at the M1 gate.
 - Ambient traffic during getaway and dump: none for EA, or simple spline traffic. Traffic adds time to M4.
-- Partial reward rule on failure (proposed default in section 4).
 - Crash reporting provider. Any third-party SDK is ask-first. Decide before M6.
 - Early Access price point.
 - Is Unreal already installed, and on what hardware (CPU, GPU, RAM, free disk)? Determines whether City Sample Crowd and Buildings are viable.
@@ -258,9 +264,13 @@ See `CLAUDE.md`. Update this plan and `CHANGELOG.md` when scope changes.
 Resolved:
 
 - Engine version: 5.8 (2026-10-23).
+- Takeover finale: drift event (2026-10-24, M1 gate).
+- Partial reward on failure: banked rep is kept, unbanked money x `FailureRewardFraction` (default 0.25) (2026-10-24).
+- Minimap: in M2 as a simple top-down capture (2026-10-24).
 
 ## 12. Revision history
 
+- 2026-10-24: M1 gate passed, drift event chosen. M2 acceptance criteria added. Failure reward rule and minimap approach resolved.
 - 2026-10-24: M1 editor assets created through MCP (status under M1). Stand-in hero car is the vehicle template's SportsCar.
 - 2026-10-24: Enabled `LiveCodingToolset` (Editor target only), since `AllToolsets` does not include it and `CLAUDE.md` relies on `LiveCodingToolset.CompileLiveCoding`. M1 code status updated: first compile clean, 24 `Takeover.*` tests pass.
 - 2026-10-23 (M1 start): Scoring spec filled in to match the first-pass code: max drift angle, speed factor, proximity applies to all scoring states, combo cap and multiplier, donut throttle requirement, collision filtering. M1 editor-side asset list added. Hero car gets its own wheel classes.
