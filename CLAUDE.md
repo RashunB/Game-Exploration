@@ -11,6 +11,12 @@ Single-player crime/driving game in Unreal Engine 5.8, C++ first. The spec, arch
 
 Run from the repo root in Git Bash on Windows. `UE_ROOT` is the engine install, for example `C:/Program Files/Epic Games/UE_5.8`.
 
+Restore third-party Content after a fresh clone, and verify it before committing level changes. Needs the staging project (`--staging`, default `C:/project_workspace/Unreal Engine/CitySample/Content`) and the engine install. Python 3.9+; the engine's own `Engine/Binaries/ThirdParty/Python3/Win64/python.exe` works:
+
+```bash
+python Tools/VendorContent/vendor_content.py restore
+```
+
 Build the editor target (editor closed):
 
 ```bash
@@ -34,7 +40,7 @@ With the editor open, compile through Live Coding (MCP `LiveCodingToolset.Compil
 - Expose every tuning value as `UPROPERTY(EditDefaultsOnly)` or in a DataAsset so the user can tune without code changes.
 - Write automation tests for scoring, heat, state transitions, and part values. Run them before marking a task done.
 - Do not mark feel-dependent tasks (handling, scoring balance, AI difficulty) done. Hand them to the user for a playtest.
-- Never commit a whole Fab pack. Migrate only the assets in use (see `PLAN.md` section 3).
+- Never commit third-party content (City Sample, Fab, engine templates). The repo is public and their licenses don't allow it. `.gitignore` tracks only `Content/Takeover/` and the level's `__ExternalActors__`/`__ExternalObjects__`. Migrate only the assets in use with `Tools/VendorContent/migrate.py`, never edit them, and run `vendor_content.py record` so `manifest.json` lists them (see `PLAN.md` section 3).
 - Ask the user before: adding any paid asset, changing engine version, adding plugins beyond those in `Takeover.uproject` or listed in `PLAN.md`, large refactors, or anything touching Steam or store setup.
 - Keep `CHANGELOG.md` current and update `PLAN.md` when scope changes. Log any AI-generated art, audio, or text that will ship, for the Steam content survey.
 

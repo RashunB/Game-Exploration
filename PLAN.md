@@ -43,8 +43,9 @@ Cloud Claude Code sessions (claude.ai/code) can edit C++, config, and docs, but 
 
 - git with Git LFS. `.gitattributes` routes `*.uasset`, `*.umap`, and binary media through LFS. `.gitignore` excludes Binaries, Intermediate, Saved, DerivedDataCache, packaging output, IDE files, and generated solution files.
 - No LFS file locking. This is a solo project, and lockable files stay read-only until locked, which fights the editor's auto-save.
-- LFS budget: GitHub Free includes 10 GiB storage and 10 GiB bandwidth per month. Overage is metered ($0.07/GiB storage, $0.0875/GiB bandwidth). Without a payment method on file, pushes of new LFS objects stop once storage is exceeded. Every re-save of a binary asset stores a full new copy. Add a payment method with a spending limit before the art pass.
-- Third-party packs: add Fab packs to a separate local staging project, then Migrate only the assets actually used into this project. Never commit a whole pack.
+- LFS budget: GitHub Free includes 10 GiB storage and 10 GiB bandwidth per month. Overage is metered ($0.07/GiB storage, $0.0875/GiB bandwidth). Without a payment method on file, pushes of new LFS objects stop once storage is exceeded. Every re-save of a binary asset stores a full new copy. Only first-party assets go through LFS (third-party content is not committed), so the budget covers this project's own maps, Blueprints, and art.
+- Third-party content stays out of git. The repo is public, and City Sample and Fab content is licensed for use in Unreal Engine products, not for publishing as source files. Add packs to the local staging project (`C:/project_workspace/Unreal Engine/CitySample`). Copy only the assets in use, with their dependency closure, using `Tools/VendorContent/dep_closure.py` and `migrate.py`. Then run `vendor_content.py record`. `Tools/VendorContent/manifest.json` (committed) lists every third-party file with its source and SHA-256, and `vendor_content.py restore` rebuilds them on a fresh clone. `.gitignore` tracks only `Content/Takeover/`, `Content/__ExternalActors__/`, and `Content/__ExternalObjects__/`. Third-party files are never edited, so the manifest hashes stay valid. The engine's vehicle template restores from the engine install.
+- Backups: the staging project and the Fab library are the only copies of third-party content outside this machine. Keep the staging project backed up. Restoring needs the same pack versions, and `restore` refuses a source file whose hash changed.
 - Maps use World Partition with One File Per Actor, so editing a level changes small per-actor files instead of rewriting one large `.umap`.
 
 ### Editor access (Unreal MCP)
@@ -87,7 +88,7 @@ Content/
     Input/       Input Actions and Mapping Contexts
     Maps/        greybox and final maps
     UI/          widget Blueprints
-  <PackName>/    migrated third-party content at its original path, never edited
+  <PackName>/    migrated third-party content at its original path, never edited, not in git (Tools/VendorContent restores it)
 ```
 
 Headers are included by path from the module root, for example `#include "Vehicle/TakeoverVehiclePawn.h"`.
@@ -210,7 +211,7 @@ Optional paid, ask the user first:
 - Easy Vehicle System (Fab): enter/exit, lights, engine audio for Chaos. The listing names 5.6 and 5.7 only. Confirm 5.8 support with the seller before buying.
 - Drift AI (Fab): drift AI with solo, tandem, and drift race modes. Its listings show 5.2 to 5.4. Treat it as incompatible until the seller confirms 5.8. Only relevant if the finale becomes a race.
 
-City Sample content is licensed for Unreal Engine products only, which is fine for this project.
+City Sample content is licensed for Unreal Engine products only, which is fine for this project. That license, like Fab's, does not allow publishing the source assets, so third-party content stays out of the public repo (section 3).
 
 ## 8. Milestones (Early Access path)
 
@@ -255,7 +256,7 @@ See `CLAUDE.md`. Update this plan and `CHANGELOG.md` when scope changes.
 ## 11. Open questions for the user
 
 - Working title and fictional name for the hero car. The code name stays `Takeover` either way.
-- Art direction: realistic (City Sample look) or stylized. Affects the art pass and the LFS budget.
+- Art direction: realistic (City Sample look) or stylized. Affects the art pass and disk use.
 - Ambient traffic during getaway and dump: none for EA, or simple spline traffic. Traffic adds time to M4.
 - Crash reporting provider. Any third-party SDK is ask-first. Decide before M6.
 - Early Access price point.
@@ -270,6 +271,7 @@ Resolved:
 
 ## 12. Revision history
 
+- 2026-10-24: Third-party content (City Sample, Fab, vehicle template) leaves git, because the repo is public. `Tools/VendorContent` restores it from the staging project and the engine install using a committed manifest. Removed from the unpushed M1 history before the first push.
 - 2026-10-24: M1 gate passed, drift event chosen. M2 acceptance criteria added. Failure reward rule and minimap approach resolved.
 - 2026-10-24: M1 editor assets created through MCP (status under M1). Stand-in hero car is the vehicle template's SportsCar.
 - 2026-10-24: Enabled `LiveCodingToolset` (Editor target only), since `AllToolsets` does not include it and `CLAUDE.md` relies on `LiveCodingToolset.CompileLiveCoding`. M1 code status updated: first compile clean, 24 `Takeover.*` tests pass.

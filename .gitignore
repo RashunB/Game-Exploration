@@ -1,3 +1,11 @@
+# Third-party Content (City Sample, Fab, engine templates) is not committed: its license does not
+# allow a public repo. Tools/VendorContent/manifest.json lists it and vendor_content.py restores it.
+# Only this project's own Content folders are tracked.
+/Content/*
+!/Content/Takeover/
+!/Content/__ExternalActors__/
+!/Content/__ExternalObjects__/
+
 # Unreal build output and caches
 Binaries/
 Intermediate/
