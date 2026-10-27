@@ -6,6 +6,15 @@ All notable changes to this project. Format follows [Keep a Changelog](https://k
 
 ### Added
 
+- Agent tooling: Superpowers plugin enabled; 26 of the 31 `quodsoler/unreal-engine-skills` vendored under `.claude/skills/` at `f3742d7` (MIT); `.agents/ue-project-context.md` for those skills. Versions, review findings, and update steps in `docs/tooling.md`.
+- `AGENTS.md` with the rules for any coding agent. `CLAUDE.md` imports it and adds the precedence order, Superpowers overrides (no worktrees, TDD scope, subagent limits), and the learning cycle commands.
+- Learning cycle in `docs/learning/`: process, concept map, glossary, note template, notes 0001 (repo skeleton) and 0002 (scoring model); `tutor` subagent; `/walkthrough`, `/learning-note`, `/your-turn`, `/quiz`, `/retro`. AI disclosure: written by Claude; developer documentation, does not ship in the game.
+- Playtest log convention in `docs/playtests/`, with the M1 gate entry reconstructed from commits for Rashun to correct.
+- ADRs 0001 to 0014 in `docs/decisions/`, linked from `PLAN.md`.
+- Hooks: `Tools/githooks/pre-commit` blocks commits that stage `Content/` outside the first-party folders, with Git LFS's own hooks alongside it; Claude Code hooks block the same commits and force-adds, warn before Unreal MCP calls with uncommitted `Content/` or `Config/` changes, and limit the tutor's writes. `/mcp-checkpoint` command.
+- CI (`.github/workflows/repo-checks.yml`): license boundary, manifest completeness, LFS pointers, file size, and Markdown links, with tests.
+- Issue templates (feature, bug, playtest feedback), a PR template, and `.github/scripts/bootstrap_github.py` for labels, milestones, M2 issues, the default branch, and branch protection.
+- `docs/windows-checklist.md` for work only the Windows machine can verify.
 - City Sample hero buildings around the plaza in `L_Greybox`: the packed (`BPP_`) versions of `Bldg_Hero_Mid_NYG_Modern_A01`, `Bldg_Hero_NYG_Modern_Square_A01`, `Bldg_Hero_Low_CHG_Modern_A01`, and `Bldg_Hero_Tower_CHE_Modern_A01` at 10 spots, 7 of them with their ground-floor packs. 40 warm uplights wash the plaza-facing facades, because the City Sample materials have no lit windows at night. About 3.1 GiB. The Level Instance versions are migrated too, but they render only as LevelStreaming because City Sample levels are not One File Per Actor. City Sample content is Epic's, licensed for Unreal Engine projects only.
 - City art pass: 420 packages (1.96 GiB) migrated by dependency closure from a City Sample staging project. Includes the City Sample modular building kit, street props, curbs, and road surfaces; a Fab street props pack; a high-poly tree; and Pack_Bonus surface sets. 124 props and trees dress the plaza sidewalks and avenue. A nebula star dome and the City Sample skyline cards were tried and dropped, and are not in the repo.
 - `SM_RoadMarkings` now marks the plaza as an intersection: lane lines, zebra crosswalks, stop bars, and edge lines inside the crowd ring.
@@ -20,6 +29,9 @@ All notable changes to this project. Format follows [Keep a Changelog](https://k
 
 ### Changed
 
+- `main` is the new branch line, created from the M1 work (`dab4dd3`). Work happens on feature branches merged by pull request after a walkthrough.
+- Working rules moved from `CLAUDE.md` to `AGENTS.md`, unchanged except for additions.
+- `.gitignore` ignores Python caches; `.gitattributes` keeps hook scripts LF.
 - Third-party content (City Sample, Fab packs, the vehicle template; 1068 files, 5.09 GiB) is no longer committed, because the repo is public and those licenses don't allow publishing the source assets. `Tools/VendorContent/manifest.json` lists each file with its source and SHA-256. `vendor_content.py restore` copies them from the staging project and the engine install, `verify` checks them, and `record` updates the manifest after a migration. `.gitignore` tracks only `Content/Takeover/` and the level's per-actor folders. Removed from the unpushed M1 history before the first push.
 - Hero car automatic gearbox shifts up at 5600 RPM (was 6000), because takeover arenas have short straights.
 - `PLAN.md` refined. Engine target moved from 5.7 to 5.8. See the plan's revision history.

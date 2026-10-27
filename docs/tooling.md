@@ -58,10 +58,10 @@ Ask first. Then:
 ```bash
 git clone https://github.com/quodsoler/unreal-engine-skills.git /tmp/ues
 git -C /tmp/ues log --oneline -5
-diff -r /tmp/ues/skills/ue-cpp-foundations .claude/skills/ue-cpp-foundations   # repeat per skill, read every change
+diff -r --strip-trailing-cr /tmp/ues/skills/ue-cpp-foundations .claude/skills/ue-cpp-foundations   # repeat per skill, read every change
 ```
 
-Copy the same 26 folders over the vendored ones, review the diff with `git diff --stat .claude/skills` and by reading it, rerun the review above, and update the commit hash and findings here.
+Some upstream files use CRLF line endings; `.gitattributes` normalizes them to LF on commit, hence `--strip-trailing-cr`. Copy the same 26 folders over the vendored ones, review the diff with `git diff --stat .claude/skills` and by reading it, rerun the review above, and update the commit hash and findings here.
 
 `npx -y skills add quodsoler/unreal-engine-skills --agent claude-code` also installs them, but it runs a package from npm. A pinned clone does the same job and can be read before anything lands.
 
