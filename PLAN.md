@@ -1,6 +1,6 @@
 # Takeover (working title): Development Plan
 
-Handoff document for Claude Code. Read this fully before starting any work. It defines the game, the architecture, the build order, and the scope. The working rules live in `CLAUDE.md` so Claude Code loads them automatically.
+Handoff document for coding agents. Read this fully before starting any work. It defines the game, the architecture, the build order, and the scope. The working rules live in `AGENTS.md` (any agent) and `CLAUDE.md` (Claude Code only, imports `AGENTS.md`), so they load automatically.
 
 ## 1. Concept
 
@@ -251,7 +251,7 @@ Multiplayer, multiple cars, car customization, a second map, progression trees, 
 
 ## 10. Working rules
 
-See `CLAUDE.md`. Update this plan and `CHANGELOG.md` when scope changes.
+See `AGENTS.md` and `CLAUDE.md`. Update this plan and `CHANGELOG.md` when scope changes.
 
 ## 11. Open questions for the user
 
