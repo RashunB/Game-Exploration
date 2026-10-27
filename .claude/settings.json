@@ -1,5 +1,6 @@
 {
 	"enabledPlugins": {
-		"unreal-engine-skills-for-claude-code@claude-plugins-official": true
+		"unreal-engine-skills-for-claude-code@claude-plugins-official": true,
+		"superpowers@claude-plugins-official": true
 	}
 }
