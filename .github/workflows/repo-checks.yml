@@ -1,0 +1,38 @@
+# Cheap checks on every push and pull request. GitHub-hosted runners can't build Unreal; real build
+# and test CI would need a self-hosted Windows runner, which is an ask-first change (docs/tooling.md).
+name: repo-checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  repo-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # lfs: false and GIT_LFS_SKIP_SMUDGE keep CI from downloading LFS objects, which would spend
+      # the repo's 10 GiB/month LFS bandwidth. The checks read pointers from git, not the objects.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          lfs: false
+          persist-credentials: false
+        env:
+          GIT_LFS_SKIP_SMUDGE: "1"
+
+      - name: Repo checks (license boundary, manifest, LFS pointers, file size, links)
+        run: python3 .github/scripts/repo_checks.py
+
+      - name: Install pytest
+        run: python3 -m pip install --disable-pip-version-check "pytest==9.1.1"
+
+      - name: Tests for repo checks and Tools
+        run: |
+          paths=".github/scripts"
+          if git ls-files 'Tools/**/test_*.py' 'Tools/**/*_test.py' | grep -q .; then
+            paths="$paths Tools"
+          fi
+          python3 -m pytest -q $paths

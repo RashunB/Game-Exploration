@@ -37,6 +37,11 @@ Build/*/**
 # Claude Code per-user settings
 .claude/settings.local.json
 
+# Python caches (Tools/ and .github/scripts/)
+__pycache__/
+*.pyc
+.pytest_cache/
+
 # OS files
 .DS_Store
 Thumbs.db
