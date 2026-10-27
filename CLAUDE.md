@@ -37,7 +37,7 @@ Superpowers was built for ordinary software repos. Each override below says why,
 - Verification before completion. Done means build output, an automation test result, or an MCP read-back or screenshot observed in this session. In a cloud session, anything that needs a build becomes a `docs/windows-checklist.md` item instead of done.
 - Plans and specs. Brainstorming and writing-plans save to `docs/superpowers/specs/` and `docs/superpowers/plans/`; commit them. Each significant choice states what, the alternatives, why (two to five sentences), and what would make it wrong later. Stop for Rashun's approval of the spec and again of the plan. Mark his tasks `owner: rashun`.
 - Brainstorming. Use it at the start of each milestone and for any open question in `PLAN.md` section 11. Write the answers back into `PLAN.md` and its revision history.
-- Finishing a branch. Never merge. Push the branch, open a PR with the template, and run `/walkthrough`. Rashun merges.
+- Finishing a branch. Never merge. Push the branch, open a PR with the template, and offer the walkthrough (`/walkthrough`). Rashun merges.
 
 ## Unreal MCP
 
@@ -48,7 +48,7 @@ Superpowers was built for ordinary software repos. Each override below says why,
 
 ## Learning cycle mechanics
 
-The process is in `docs/learning/README.md`. Commands:
+The process is in `docs/learning/README.md`. Commands (Claude can start the first two and `/mcp-checkpoint` itself; the rest only run when Rashun types them):
 
 - `/walkthrough [range]`: explain a diff in reading order (data, logic, wiring), pausing for questions. Runs in this session, since a subagent can't hold a conversation.
 - `/learning-note [range]`: the `tutor` subagent writes `docs/learning/notes/NNNN-<feature>.md` and updates the concept map and glossary.

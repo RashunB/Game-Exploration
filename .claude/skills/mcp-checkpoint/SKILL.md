@@ -1,7 +1,6 @@
 ---
 name: mcp-checkpoint
-description: Commit current work before an Unreal MCP session that touches several assets.
-disable-model-invocation: true
+description: Commit current work before an Unreal MCP session that touches several assets, or when the MCP checkpoint hook warns that Content/ or Config/ is dirty.
 ---
 
 Make a checkpoint commit so editor changes made over Unreal MCP can be reverted from git.

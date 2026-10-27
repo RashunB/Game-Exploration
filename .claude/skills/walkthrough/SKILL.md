@@ -1,7 +1,6 @@
 ---
 name: walkthrough
-description: Walk Rashun through a diff in reading order before he merges it, pausing for his questions.
-disable-model-invocation: true
+description: Walk Rashun through a branch diff in reading order (data, logic, wiring), pausing for his questions. Use when a feature branch is ready to merge, or when he asks for a walkthrough.
 argument-hint: "[commit range, default main...HEAD]"
 ---
 

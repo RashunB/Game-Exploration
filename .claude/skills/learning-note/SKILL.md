@@ -1,7 +1,6 @@
 ---
 name: learning-note
-description: Write a learning note for a feature or commit range with the tutor subagent.
-disable-model-invocation: true
+description: Write a learning note for a feature or commit range with the tutor subagent. Use after a walkthrough when the feature introduced a concept with no note yet, or for a backlog note, once Rashun agrees.
 argument-hint: "[commit range or note name, e.g. 0003-scoring-component-and-config]"
 context: fork
 agent: tutor
