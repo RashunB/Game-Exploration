@@ -18,11 +18,11 @@ Money and rep carry over between loops. Heat carries across phases within a loop
 
 ## 2. Hard constraints
 
-- Engine: Unreal Engine 5.8 (launcher build, 5.8.4 at time of writing), Chaos Vehicles, Enhanced Input. Moved from 5.7 because the Unreal MCP editor plugin that Epic's Claude Code plugin depends on ships with 5.8. 5.8 is expected to be the last 5.x release, so no engine upgrade is planned before Early Access.
+- Engine: Unreal Engine 5.8 (launcher build, 5.8.4 at time of writing), Chaos Vehicles, Enhanced Input. Moved from 5.7 because the Unreal MCP editor plugin that Epic's Claude Code plugin depends on ships with 5.8. 5.8 is expected to be the last 5.x release, so no engine upgrade is planned before Early Access. ([ADR 0001](docs/decisions/0001-ue-5-8-over-5-7.md))
 - Platform for Early Access: Windows only, keyboard/mouse and gamepad.
-- C++ first. All gameplay logic lives in C++. Blueprints are thin subclasses that hold tuning values and asset references only. Reason: Claude can read, diff, and refactor C++ as text. Blueprints are binary .uasset files and can only be changed through the editor.
+- C++ first. All gameplay logic lives in C++. Blueprints are thin subclasses that hold tuning values and asset references only. Reason: Claude can read, diff, and refactor C++ as text. Blueprints are binary .uasset files and can only be changed through the editor. ([ADR 0002](docs/decisions/0002-cpp-first-thin-blueprints.md))
 - Free assets by default (see section 7). No paid asset gets added without asking the user first.
-- All cars, brands, and logos are fictional. No real manufacturer names, badges, or recognizable body designs.
+- All cars, brands, and logos are fictional. No real manufacturer names, badges, or recognizable body designs. ([ADR 0008](docs/decisions/0008-fictional-cars-and-brands.md))
 - Single-player only for Early Access. Do not add networking or replication.
 - The code name `Takeover` is fixed for the module, the `.uproject`, and class names, whatever the store title ends up being. Renaming a module later needs CoreRedirects for every Blueprint subclass.
 
@@ -42,29 +42,56 @@ Cloud Claude Code sessions (claude.ai/code) can edit C++, config, and docs, but 
 ### Version control
 
 - git with Git LFS. `.gitattributes` routes `*.uasset`, `*.umap`, and binary media through LFS. `.gitignore` excludes Binaries, Intermediate, Saved, DerivedDataCache, packaging output, IDE files, and generated solution files.
-- No LFS file locking. This is a solo project, and lockable files stay read-only until locked, which fights the editor's auto-save.
+- No LFS file locking. This is a solo project, and lockable files stay read-only until locked, which fights the editor's auto-save. ([ADR 0007](docs/decisions/0007-git-lfs-without-locking.md))
 - LFS budget: GitHub Free includes 10 GiB storage and 10 GiB bandwidth per month. Overage is metered ($0.07/GiB storage, $0.0875/GiB bandwidth). Without a payment method on file, pushes of new LFS objects stop once storage is exceeded. Every re-save of a binary asset stores a full new copy. Only first-party assets go through LFS (third-party content is not committed), so the budget covers this project's own maps, Blueprints, and art.
-- Third-party content stays out of git. The repo is public, and City Sample and Fab content is licensed for use in Unreal Engine products, not for publishing as source files. Add packs to the local staging project (`C:/project_workspace/Unreal Engine/CitySample`). Copy only the assets in use, with their dependency closure, using `Tools/VendorContent/dep_closure.py` and `migrate.py`. Then run `vendor_content.py record`. `Tools/VendorContent/manifest.json` (committed) lists every third-party file with its source and SHA-256, and `vendor_content.py restore` rebuilds them on a fresh clone. `.gitignore` tracks only `Content/Takeover/`, `Content/__ExternalActors__/`, and `Content/__ExternalObjects__/`. Third-party files are never edited, so the manifest hashes stay valid. The engine's vehicle template restores from the engine install.
+- Third-party content stays out of git. The repo is public, and City Sample and Fab content is licensed for use in Unreal Engine products, not for publishing as source files. Add packs to the local staging project (`C:/project_workspace/Unreal Engine/CitySample`). Copy only the assets in use, with their dependency closure, using `Tools/VendorContent/dep_closure.py` and `migrate.py`. Then run `vendor_content.py record`. `Tools/VendorContent/manifest.json` (committed) lists every third-party file with its source and SHA-256, and `vendor_content.py restore` rebuilds them on a fresh clone. `.gitignore` tracks only `Content/Takeover/`, `Content/__ExternalActors__/`, and `Content/__ExternalObjects__/`. Third-party files are never edited, so the manifest hashes stay valid. The engine's vehicle template restores from the engine install. `Tools/githooks/pre-commit` and CI (`.github/workflows/repo-checks.yml`) both reject a commit that tracks anything under `Content/` outside those three folders. ([ADR 0009](docs/decisions/0009-third-party-content-out-of-repo.md))
 - Backups: the staging project and the Fab library are the only copies of third-party content outside this machine. Keep the staging project backed up. Restoring needs the same pack versions, and `restore` refuses a source file whose hash changed.
-- Maps use World Partition with One File Per Actor, so editing a level changes small per-actor files instead of rewriting one large `.umap`.
+- Maps use World Partition with One File Per Actor, so editing a level changes small per-actor files instead of rewriting one large `.umap`. ([ADR 0003](docs/decisions/0003-one-world-partition-map.md))
 
 ### Editor access (Unreal MCP)
 
-- Engine side: the `ModelContextProtocol`, `AllToolsets`, and `LiveCodingToolset` plugins, all Experimental, enabled in the `.uproject` for the Editor target only. `ModelContextProtocol` is the server; `AllToolsets` provides the tools, and the server exposes none without it. `LiveCodingToolset` is not part of `AllToolsets` and is off by default, so it is enabled separately for `LiveCodingToolset.CompileLiveCoding`. The launcher build ships no MCP proxy, so a full build (editor closed) drops the MCP connection; Live Coding keeps it for function-body changes. `Config/DefaultEditorPerProjectUserSettings.ini` sets `bAutoStartServer=True`, so the server starts with the editor on http://127.0.0.1:8000/mcp. Manual start: `ModelContextProtocol.StartServer` in the editor console.
+- Engine side: the `ModelContextProtocol`, `AllToolsets`, and `LiveCodingToolset` plugins, all Experimental, enabled in the `.uproject` for the Editor target only. `ModelContextProtocol` is the server; `AllToolsets` provides the tools, and the server exposes none without it. `LiveCodingToolset` is not part of `AllToolsets` and is off by default, so it is enabled separately for `LiveCodingToolset.CompileLiveCoding`. ([ADR 0013](docs/decisions/0013-enable-livecodingtoolset.md)) The launcher build ships no MCP proxy, so a full build (editor closed) drops the MCP connection; Live Coding keeps it for function-body changes. `Config/DefaultEditorPerProjectUserSettings.ini` sets `bAutoStartServer=True`, so the server starts with the editor on http://127.0.0.1:8000/mcp. Manual start: `ModelContextProtocol.StartServer` in the editor console.
 - Claude side: Epic's plugin (`/plugin install unreal-engine-skills-for-claude-code@claude-plugins-official`), also enabled for this repo in `.claude/settings.json`. `.mcp.json` at the repo root points Claude Code at the server. If the port changes, regenerate it with `ModelContextProtocol.GenerateClientConfig ClaudeCode`.
 - Use MCP for placing actors, creating Blueprint subclasses and DataAssets, Input Actions and Mapping Contexts, assigning assets, and Live Coding compiles. Use plain file edits for C++ and config.
 - Cautions from Epic's README: the server has no authentication, so any local process can drive the editor while it is open. `ProgrammaticToolset.execute_tool_script` runs arbitrary Python with full editor access. Do not run Claude Code with `--dangerously-skip-permissions` while the plugin is loaded. Save and commit before long MCP sessions.
+
+### Agent tooling and repo checks
+
+- Three layers with one job each: Epic's plugin for editor control, 26 vendored `quodsoler/unreal-engine-skills` for Unreal C++ patterns, and the Superpowers plugin for process. Versions, review findings, hooks, CI, and the update procedure are in `docs/tooling.md`. Precedence and the Superpowers overrides (no git worktrees, TDD only for pure logic) are in `CLAUDE.md`. ([ADR 0014](docs/decisions/0014-agent-plugin-and-skill-stack.md))
+- `AGENTS.md` holds the rules for any coding agent. `CLAUDE.md` imports it and adds Claude-specific rules.
+- `main` is the default branch. One branch per feature, merged by the user through a pull request after a walkthrough.
+- CI runs only cheap checks on GitHub-hosted runners (license boundary, manifest, LFS pointers, file size, links). Build and test CI needs a self-hosted runner on the Windows machine, which is ask-first.
+- Each feature also runs the learning cycle in `docs/learning/README.md`: a walkthrough before merge, a learning note when it introduces a new concept, and one or two `owner: rashun` tasks per milestone.
 
 ### Testing
 
 - Unreal Automation tests for pure logic: scoring math, state machine transitions, heat tiers and decay, part values. Test names start with `Takeover.`.
 - Keep the math in plain structs and functions with no `UWorld` dependency, so tests run headless with `-nullrhi`.
-- Build and test commands are in `CLAUDE.md`.
+- `Tools/` Python is tested with pytest, and CI runs those tests (`docs/tooling.md`).
+- Feel work (handling, timing, balance, AI difficulty) is verified by the user's playtest, logged in `docs/playtests/`.
+- Build and test commands are in `AGENTS.md`.
 
 ### Folder layout
 
 ```
+AGENTS.md        rules for any coding agent
+CLAUDE.md        Claude Code rules, imports AGENTS.md
+PLAN.md
+CHANGELOG.md
 Takeover.uproject
+.agents/         project context read by the quodsoler skills
+.claude/         settings, hooks, agents, skills (vendored ue-* and the learning commands)
+.github/         CI workflow, repo checks, issue and PR templates
+docs/
+  tooling.md     plugin and skill versions, hooks, CI, update procedure
+  decisions/     ADRs
+  learning/      learning cycle, concept map, glossary, notes, retros
+  playtests/     feel-gate sign-offs
+  superpowers/   specs and plans
+  windows-checklist.md
+Tools/
+  VendorContent/ third-party content manifest and restore tooling
+  githooks/      pre-commit Content guard and Git LFS hooks
 Config/
 Source/
   Takeover.Target.cs
@@ -97,21 +124,21 @@ Headers are included by path from the module root, for example `#include "Vehicl
 
 ### World and lifetime
 
-- One persistent World Partition map holds the whole loop: house, streets, arena, chop shop, drop zones. No level travel during a loop, so world-scoped systems keep their state across phases.
+- One persistent World Partition map holds the whole loop: house, streets, arena, chop shop, drop zones. No level travel during a loop, so world-scoped systems keep their state across phases. ([ADR 0003](docs/decisions/0003-one-world-partition-map.md))
 - `UTakeoverProgressSubsystem` (UGameInstanceSubsystem) owns money, rep, and loops completed, and loads and saves `UTakeoverSaveGame`.
 
 ### Mission spine
 
-- `UMissionSubsystem` (UTickableWorldSubsystem, so phases tick without a host actor) owns the current loop and drives phase transitions.
+- `UMissionSubsystem` (UTickableWorldSubsystem, so phases tick without a host actor) owns the current loop and drives phase transitions. ([ADR 0004](docs/decisions/0004-mission-subsystem-with-phase-objects.md))
 - `EMissionPhase`: Idle, BreakIn, Getaway, Takeover, Chop, Dump, Complete, Failed.
 - Each phase is a `UMissionPhase` subclass with `Enter()`, `Tick()`, `Exit()`, and `OnPhaseComplete` / `OnPhaseFailed` delegates. Phases do not reference each other. The subsystem wires them together.
 - Phase order and phase classes come from a `UMissionConfig` DataAsset.
 - `FMissionLoopState`, owned by the subsystem and handed to each phase on `Enter()`, carries what phases need from each other: the stolen vehicle, takeover score and rep earned, chop payout, and failure reason.
-- Failure (arrested, car destroyed) ends the loop with partial rewards: rep already banked from the takeover is kept, and unbanked money is scaled by `FailureRewardFraction` on `UMissionConfig` (default 0.25).
+- Failure (arrested, car destroyed) ends the loop with partial rewards: rep already banked from the takeover is kept, and unbanked money is scaled by `FailureRewardFraction` on `UMissionConfig` (default 0.25). ([ADR 0012](docs/decisions/0012-failure-rewards.md))
 
 ### Player and input
 
-- `ATakeoverPlayerController` owns the heat component and swaps possession between the on-foot character and the vehicle. Heat lives here so it survives pawn swaps.
+- `ATakeoverPlayerController` owns the heat component and swaps possession between the on-foot character and the vehicle. Heat lives here so it survives pawn swaps. ([ADR 0005](docs/decisions/0005-heat-on-player-controller.md))
 - Enhanced Input mapping contexts: `IMC_OnFoot`, `IMC_Vehicle`, `IMC_Menu`. The controller swaps contexts on possession.
 - Every action gets keyboard/mouse and gamepad bindings from M0. Drift feel gets tuned on an analog stick, so gamepad can't wait for the polish milestone.
 - Input Actions and Mapping Contexts are assets created through the editor or MCP. C++ reaches them through a `UTakeoverInputConfig` DataAsset.
@@ -128,7 +155,7 @@ Headers are included by path from the module root, for example `#include "Vehicl
 - Handling profiles as DataAssets: Street (getaway), Drift (takeover), Stripped (dump, on rims, degraded grip and power). Swap profiles at runtime by phase.
 - Chaos exposes runtime setters for some values (torque, friction multipliers, drag), but wheel setup lives on wheel class defaults. In M1, confirm which profile fields apply live. Fields that don't get applied by recreating the vehicle's physics state at a point where the car is slow or stopped: the arena entry trigger and the chop shop.
 - The hero car is a BP subclass of `ATakeoverVehiclePawn` that reuses a City Sample vehicle's mesh, physics asset, and wheel animation. It does not reuse the City Sample vehicle Blueprint.
-- Give the hero car its own wheel classes, not shared with police or traffic cars. Epic issue UE-274631 reports per-car wheel configuration writing to the shared wheel class defaults, which would leak handling changes between cars.
+- Give the hero car its own wheel classes, not shared with police or traffic cars. Epic issue UE-274631 reports per-car wheel configuration writing to the shared wheel class defaults, which would leak handling changes between cars. ([ADR 0010](docs/decisions/0010-hero-car-own-wheel-classes.md))
 - Expect real tuning time. Drift feel is iteration with the user, not something to mark done from code alone.
 
 ### Persistence
@@ -159,7 +186,7 @@ Each phase lists the Early Access scope and acceptance criteria. Anything not li
 ### 5.3 Takeover (core loop, build first)
 
 - Arena: one intersection or parking lot with a crowd ring defined by a spline.
-- `UTakeoverScoringComponent` on the vehicle feeds vehicle state each tick into `FTakeoverScoringModel`, a plain struct with no world access, so the scoring math is covered by automation tests. All thresholds live on a `UTakeoverScoringConfig` DataAsset. Tunable defaults:
+- `UTakeoverScoringComponent` on the vehicle feeds vehicle state each tick into `FTakeoverScoringModel`, a plain struct with no world access, so the scoring math is covered by automation tests. ([ADR 0006](docs/decisions/0006-scoring-math-in-plain-struct.md)) All thresholds live on a `UTakeoverScoringConfig` DataAsset. Tunable defaults:
   - Slip angle is the angle between the car's forward vector and its velocity in the ground plane. It only counts above a minimum speed (default 20 km/h) so low-speed jitter doesn't score. Above 100 degrees the car is spinning out or reversing, which is not a drift.
   - Each tick the car is in exactly one scoring state, checked in priority order: Donut, Drift, Burnout, None. A donut also has a high slip angle, and the priority keeps it from scoring twice.
   - Drift points per second = (slip angle above 15 degrees) x speed factor x proximity multiplier. Speed factor is speed / 60 km/h, capped at 3.
@@ -170,7 +197,7 @@ Each phase lists the Early Access scope and acceptance criteria. Anything not li
   - Collisions below an impulse threshold, and ground contact, don't break the combo.
   - Hitting a crowd member ends the combo and adds heat (heat hooks into the scoring component's crowd hit event in M2).
 - Raid timer: when heat hits tier 3 during the takeover, police arrive and the player must leave. Leaving with a high score banks rep. Needs heat, so it lands in M2, not M1.
-- Event: one drift event (score attack along a marked line) or one sprint race against simple AI. Chosen at the M1 gate: drift event. It reuses the scoring model, while a race needs AI drivers on Chaos, the same hard problem as police AI.
+- Event: one drift event (score attack along a marked line) or one sprint race against simple AI. Chosen at the M1 gate: drift event. It reuses the scoring model, while a race needs AI drivers on Chaos, the same hard problem as police AI. ([ADR 0011](docs/decisions/0011-drift-event-finale.md))
 - Feedback: score popups, combo meter, crowd cheer audio scaled to combo, phone-flash particles from the crowd, tire smoke and skid marks. M1 only needs a debug score/combo readout, tire smoke, and skid marks. The crowd is placeholder meshes on the spline until the art pass.
 - Acceptance: the user playtests the greybox on gamepad and keyboard and confirms it is fun. This is a gate. Do not move past milestone M1 without that confirmation.
 
@@ -231,7 +258,7 @@ Estimates assume one developer full-time with Claude doing most of the code. Par
      - Tire smoke and skid marks (Niagara) after the car drives.
    - Editor side status (2026-10-24): all of the above except Niagara exists and spawns cleanly in PIE. `BP_HeroCar` uses the vehicle template's SportsCar as a stand-in mesh until City Sample Vehicles is migrated. Handbrake is bound to both Gamepad A and RB until the playtest picks one. `L_Greybox` uses a flat ground slab instead of the template landscape, which did not survive duplication. The crowd ring is a 120 x 70 m oval so there is a straight long enough to leave 1st gear. The lot is dressed as a night takeover intersection: two crossing avenues, 16 blocks of procedural-window towers, sidewalks, lane markings, 40 street lamps, 6 shadow-casting plaza floodlights, neon at street level, fixed night exposure. All engine shapes and authored materials, no Fab content yet. Handling is mid-tuning with telemetry (`takeover.Telemetry`).
    - Not yet built: a physical burnout. Scoring detects throttle plus brake, but with default wheel setup Chaos brakes every wheel, so the rears probably won't spin. Check in the first drive, and if so, brake only the front axle while both are held.
-   - Gate passed (2026-10-24): the user confirmed the takeover is fun and chose the drift event for the finale. Tire smoke, skid marks, and the burnout check carry over into M2.
+   - Gate passed (2026-10-24): the user confirmed the takeover is fun and chose the drift event for the finale. Tire smoke, skid marks, and the burnout check carry over into M2. Playtest record (reconstructed): `docs/playtests/2026-10-24-m1-gate.md`.
 3. M2, week 5. Mission subsystem, loop state, progress subsystem and save game, heat, raid timer, HUD (heat meter, score, objective text, minimap).
    - Acceptance:
      - A full loop runs in `L_Greybox` through `UMissionSubsystem`: Idle, BreakIn, Getaway, Takeover, Chop, Dump, Complete. Every phase but Takeover is a stub that completes on a debug command until M3 to M5. Phase transitions are covered by automation tests.
@@ -271,6 +298,7 @@ Resolved:
 
 ## 12. Revision history
 
+- 2026-10-27: Agent docs and repo administration. `main` is the default branch with M0 and M1 on it. Working rules split into `AGENTS.md` (any agent) and `CLAUDE.md` (Claude Code, imports `AGENTS.md`). Added the plugin and skill stack (Superpowers, 26 quodsoler Unreal skills) with Unreal-specific overrides, the learning cycle (`docs/learning/`), ADRs 0001 to 0014 linked from the sections they shape, playtest logs, issue and PR templates, CI repo checks, and git and Claude Code hooks that block third-party Content commits. Decided: the full Superpowers plugin on every model, one or two your-turn tasks per milestone, and learning notes only for features that introduce a new concept. Folder layout and testing sections updated.
 - 2026-10-24: Third-party content (City Sample, Fab, vehicle template) leaves git, because the repo is public. `Tools/VendorContent` restores it from the staging project and the engine install using a committed manifest. Removed from the unpushed M1 history before the first push.
 - 2026-10-24: M1 gate passed, drift event chosen. M2 acceptance criteria added. Failure reward rule and minimap approach resolved.
 - 2026-10-24: M1 editor assets created through MCP (status under M1). Stand-in hero car is the vehicle template's SportsCar.
