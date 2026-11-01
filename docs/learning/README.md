@@ -57,10 +57,10 @@ Everything built before this cycle existed skipped the walkthrough, note, and yo
 | --- | --- | --- |
 | [0001-repo-skeleton](notes/0001-repo-skeleton.md) | `.uproject` and plugins, Build.cs, targets, module files, the smoke test, LFS layout, MCP config | written |
 | [0002-scoring-model](notes/0002-scoring-model.md) | `FTakeoverScoringModel`, slip angle and yaw rate, state priority, combo, proximity, the headless spec | written |
-| 0003-scoring-component-and-config | how the component samples Chaos each tick, collision filtering, crowd hits, `UTakeoverScoringConfig` | issue open |
-| 0004-vehicle-pawn-and-handling | `ATakeoverVehiclePawn`, `UTakeoverHandlingProfile`, runtime vs wheel-class values, UE-274631, gearbox and damping fixes, telemetry | issue open |
-| 0005-input-and-controller | Enhanced Input, `UTakeoverInputConfig`, context swapping, game mode wiring | issue open |
-| 0006-arena-and-greybox | `ATakeoverArena` and its spline, `L_Greybox`, World Partition and One File Per Actor | issue open |
-| 0007-vendor-content-pipeline | why third-party content stays out, manifest, dependency closure, restore, verify, record | issue open |
+| 0003-scoring-component-and-config | how the component samples Chaos each tick, collision filtering, crowd hits, `UTakeoverScoringConfig` | issue #11 |
+| 0004-vehicle-pawn-and-handling | `ATakeoverVehiclePawn`, `UTakeoverHandlingProfile`, runtime vs wheel-class values, UE-274631, gearbox and damping fixes, telemetry | issue #12 |
+| 0005-input-and-controller | Enhanced Input, `UTakeoverInputConfig`, context swapping, game mode wiring | issue #13 |
+| 0006-arena-and-greybox | `ATakeoverArena` and its spline, `L_Greybox`, World Partition and One File Per Actor | issue #14 |
+| 0007-vendor-content-pipeline | why third-party content stays out, manifest, dependency closure, restore, verify, record | issue #15 |
 
 Write these before or alongside M2, not after.
