@@ -28,7 +28,7 @@ Overrides for an Unreal project, each with its reason in `CLAUDE.md`: no git wor
 
 ## Consequences
 
-About 17.6 KB of skill descriptions load every turn. Superpowers follows the marketplace, so its version can move between sessions; `docs/tooling.md` records what was enabled. Updating any third-party layer is ask-first. Hooks enforce the license boundary and the MCP checkpoint, since instructions alone aren't guaranteed.
+About 17.6 KB of skill descriptions load every turn. Superpowers' version is pinned by the official marketplace entry and moves when that entry is updated; `docs/tooling.md` records what was enabled. Updating any third-party layer is ask-first. Hooks enforce the license boundary and the MCP checkpoint, since instructions alone aren't guaranteed.
 
 ## Revisit if
 

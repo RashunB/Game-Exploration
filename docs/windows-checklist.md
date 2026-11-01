@@ -9,7 +9,7 @@ Run these after pulling the branch, in Git Bash from the repo root.
 - [ ] Hooks path: `sh Tools/githooks/install.sh`, then `git config core.hooksPath` prints `Tools/githooks`. (The Claude Code SessionStart hook also sets it when unset.)
 - [ ] LFS still uploads: commit a real asset change (or the next one that comes along) and confirm `git push` prints the LFS upload line. That proves the LFS `pre-push` hook in `Tools/githooks/` runs.
 - [ ] Git hook blocks third-party content: by hand, `mkdir -p Content/Foo && echo x > Content/Foo/a.txt && git add -f Content/Foo/a.txt && git commit -m test`. Expect "Blocked". Then `git restore --staged Content/Foo/a.txt && rm -r Content/Foo`.
-- [ ] Claude Code loads both plugins: `/plugin` shows `unreal-engine-skills-for-claude-code` and `superpowers` enabled. Record both versions in `docs/tooling.md`.
+- [ ] Claude Code loads both plugins: `/plugin` shows `unreal-engine-skills-for-claude-code` and `superpowers` enabled. `enabledPlugins` does not install anything, so if Superpowers is missing, run `/plugin install superpowers@claude-plugins-official`. Confirm the versions match `docs/tooling.md` (Superpowers 7.0.0 at `bb92a77`, Epic at `a6aa73a`).
 - [ ] Superpowers' SessionStart hook runs under Git Bash without errors (no hook error on session start).
 - [ ] Skills appear: the 26 `ue-*` skills, plus `/walkthrough`, `/learning-note`, `/your-turn`, `/quiz`, `/retro`, `/mcp-checkpoint`.
 - [ ] Import works: in a fresh session, ask Claude for the test-first list without reading files. It should list save data round-trips, which only `AGENTS.md` mentions. (Already passed in a cloud session on 2026-10-27; recheck locally.)

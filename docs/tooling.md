@@ -17,15 +17,16 @@ Recorded 2026-10-27.
 ## Epic plugin
 
 - Id: `unreal-engine-skills-for-claude-code@claude-plugins-official`.
-- Version: not recorded yet. Read it from `/plugin` on the Windows machine and fill it in here (`docs/windows-checklist.md`).
+- Version: the `claude-plugins-official` marketplace pins it to commit `a6aa73a` of `EpicGames/unreal-engine-skills-for-claude-code-plugin` (checked 2026-11-01). Confirm with `/plugin` on the Windows machine.
 - Engine side: the `ModelContextProtocol`, `AllToolsets`, and `LiveCodingToolset` plugins in `Takeover.uproject`, Editor target only. See `PLAN.md` section 3.
 - Its SessionStart hook needs Git Bash on Windows.
 
 ## Superpowers
 
 - Id: `superpowers@claude-plugins-official`, as given in the Superpowers README.
-- Version at enablement: 7.0.1, upstream commit `2ce8aa1` (2026-10-21).
-- `enabledPlugins` does not pin a version. The plugin follows the marketplace, so a later session can load a newer release. Check the version with `/plugin` when behavior changes, and update this file.
+- Version: 7.0.0. The `claude-plugins-official` marketplace pins it to upstream commit `bb92a77` (2026-10-09), checked 2026-11-01. Upstream's latest is 7.0.1 (`2ce8aa1`, 2026-10-21, a brainstorming retune); the review below covered both, and the spec and plan paths and the precedence statement are the same in each.
+- Pinning comes from the marketplace entry, not from this repo: the version changes when Anthropic updates the marketplace. Check it with `/plugin` when behavior changes, and update this file.
+- `enabledPlugins` only enables a plugin that is installed. It does not install one: a cloud session on 2026-11-01 had the project settings and no plugins installed. On a new machine, run `/plugin install superpowers@claude-plugins-official` (and the same for Epic's plugin) once.
 - Skills: brainstorming, writing-plans, executing-plans, subagent-driven-development, dispatching-parallel-agents, test-driven-development, systematic-debugging, verification-before-completion, requesting-code-review, receiving-code-review, using-git-worktrees, finishing-a-development-branch, writing-skills, using-superpowers, diagnosing-superpowers.
 - It adds a SessionStart hook (`run-hook.cmd session-start`, run through bash) that loads `using-superpowers`.
 - Specs go to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and plans to `docs/superpowers/plans/YYYY-MM-DD-<feature>.md`. Both are committed.
