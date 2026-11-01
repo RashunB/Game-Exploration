@@ -10,6 +10,8 @@ class USpringArmComponent;
 class UStaticMeshComponent;
 class UTakeoverHandlingProfile;
 class UTakeoverScoringComponent;
+class ATakeoverCharacter;
+class UTakeoverInteractableComponent;
 struct FInputActionValue;
 
 /**
@@ -37,6 +39,9 @@ public:
 
 	UTakeoverScoringComponent* GetScoring() const { return Scoring; }
 
+	/** Stops the car where it is for the chop shop: no throttle, handbrake on */
+	void ParkForChop();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -48,6 +53,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Scoring")
 	TObjectPtr<UTakeoverScoringComponent> Scoring;
+
+	/** Where the on-foot player gets in. Move it to the driver's side on the Blueprint. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vehicle")
+	TObjectPtr<UTakeoverInteractableComponent> DriverDoor;
 
 	/**
 	 * Visual parts for cars whose skeletal mesh only carries the wheel rig, like the vehicle template's
@@ -102,6 +111,9 @@ private:
 	void StopHandbrake(const FInputActionValue& Value);
 	void LookAround(const FInputActionValue& Value);
 	void ResetVehicle(const FInputActionValue& Value);
+
+	UFUNCTION()
+	void HandleDriverDoor(ATakeoverCharacter* Character);
 
 	UPROPERTY(Transient)
 	TObjectPtr<UTakeoverHandlingProfile> ActiveHandlingProfile;

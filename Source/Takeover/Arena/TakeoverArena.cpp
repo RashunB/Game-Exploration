@@ -1,5 +1,6 @@
 #include "Arena/TakeoverArena.h"
 
+#include "Arena/TakeoverRingGeometry.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/SplineComponent.h"
 #include "Engine/CollisionProfile.h"
@@ -63,4 +64,19 @@ float ATakeoverArena::GetDistanceToCrowd(const FVector& WorldLocation) const
 bool ATakeoverArena::IsCrowdComponent(const UPrimitiveComponent* Component) const
 {
 	return Component && Component == CrowdPlaceholders.Get();
+}
+
+bool ATakeoverArena::IsInsideCrowdLine(const FVector& WorldLocation) const
+{
+	const float SplineLength = CrowdSpline->GetSplineLength();
+	const int32 Count = FMath::Max(FMath::CeilToInt(SplineLength / InsideTestSpacingCm), 3);
+
+	TArray<FVector2D> Polygon;
+	Polygon.Reserve(Count);
+	for (int32 Index = 0; Index < Count; ++Index)
+	{
+		const FVector Point = CrowdSpline->GetLocationAtDistanceAlongSpline(SplineLength * Index / Count, ESplineCoordinateSpace::World);
+		Polygon.Emplace(Point.X, Point.Y);
+	}
+	return FTakeoverRingGeometry::IsInside(Polygon, FVector2D(WorldLocation.X, WorldLocation.Y));
 }

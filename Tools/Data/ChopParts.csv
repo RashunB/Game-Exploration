@@ -1,0 +1,7 @@
+Name,DisplayName,BaseValue,RemovalSeconds
+Wheels,Wheels and rims,600,3
+Engine,Engine,1200,5
+Doors,Doors,300,2
+Hood,Hood,200,1.5
+Seats,Seats,250,2
+Stereo,Stereo,150,1

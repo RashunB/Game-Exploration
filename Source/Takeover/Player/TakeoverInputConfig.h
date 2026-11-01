@@ -40,4 +40,19 @@ public:
 	/** Digital */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Vehicle")
 	TObjectPtr<UInputAction> ResetVehicleAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Contexts")
+	TObjectPtr<UInputMappingContext> OnFootContext;
+
+	/** Axis2D: X strafes, Y walks forward */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "On foot")
+	TObjectPtr<UInputAction> MoveAction;
+
+	/** Axis2D: X yaw, Y pitch */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "On foot")
+	TObjectPtr<UInputAction> LookAction;
+
+	/** Digital: search, open, get in the car */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "On foot")
+	TObjectPtr<UInputAction> InteractAction;
 };

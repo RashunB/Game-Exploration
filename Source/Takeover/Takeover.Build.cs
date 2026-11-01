@@ -19,5 +19,13 @@ public class Takeover : ModuleRules
 			"ChaosVehicles",
 			"PhysicsCore"
 		});
+
+		// UMG for the chop menu, which builds its widget tree in C++
+		PrivateDependencyModuleNames.AddRange(new string[]
+		{
+			"UMG",
+			"Slate",
+			"SlateCore"
+		});
 	}
 }

@@ -27,6 +27,9 @@ public:
 
 	bool IsCrowdComponent(const UPrimitiveComponent* Component) const;
 
+	/** Whether a world location is inside the crowd line, in the ground plane */
+	bool IsInsideCrowdLine(const FVector& WorldLocation) const;
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Arena")
 	TObjectPtr<USceneComponent> Root;
@@ -40,4 +43,8 @@ protected:
 	/** Per placed arena, since it depends on the spline drawn in the level */
 	UPROPERTY(EditAnywhere, Category = "Arena", meta = (ClampMin = "50"))
 	float PlaceholderSpacingCm = 150.f;
+
+	/** Spacing of the points sampled along the spline for the inside test */
+	UPROPERTY(EditAnywhere, Category = "Arena", meta = (ClampMin = "10"))
+	float InsideTestSpacingCm = 200.f;
 };

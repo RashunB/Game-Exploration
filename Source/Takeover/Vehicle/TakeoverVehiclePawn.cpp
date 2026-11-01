@@ -9,10 +9,14 @@
 #include "EnhancedInputComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "InputActionValue.h"
+#include "Player/TakeoverCharacter.h"
 #include "Player/TakeoverInputConfig.h"
 #include "Player/TakeoverPlayerController.h"
+#include "Stealth/TakeoverInteractableComponent.h"
 #include "Takeover.h"
 #include "Vehicle/TakeoverHandlingProfile.h"
+
+#define LOCTEXT_NAMESPACE "TakeoverVehicle"
 
 namespace
 {
@@ -87,6 +91,11 @@ ATakeoverVehiclePawn::ATakeoverVehiclePawn()
 
 	Scoring = CreateDefaultSubobject<UTakeoverScoringComponent>(TEXT("Scoring"));
 
+	DriverDoor = CreateDefaultSubobject<UTakeoverInteractableComponent>(TEXT("DriverDoor"));
+	DriverDoor->SetupAttachment(GetMesh());
+	DriverDoor->SetRelativeLocation(FVector(0.f, -120.f, 80.f));
+	DriverDoor->Prompt = LOCTEXT("GetIn", "Get in");
+
 	// Socket names match the vehicle template's wheel rig
 	BodyMesh = CreateVisualMesh(TEXT("BodyMesh"), NAME_None);
 	GlassMesh = CreateVisualMesh(TEXT("GlassMesh"), NAME_None);
@@ -116,6 +125,8 @@ UStaticMeshComponent* ATakeoverVehiclePawn::CreateVisualMesh(FName Name, FName P
 void ATakeoverVehiclePawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+	DriverDoor->OnInteract.AddUniqueDynamic(this, &ATakeoverVehiclePawn::HandleDriverDoor);
 
 	if (DefaultHandlingProfile)
 	{
@@ -249,3 +260,33 @@ void ATakeoverVehiclePawn::ResetVehicle(const FInputActionValue& Value)
 	GetMesh()->SetPhysicsLinearVelocity(FVector::ZeroVector);
 	GetMesh()->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
 }
+
+void ATakeoverVehiclePawn::HandleDriverDoor(ATakeoverCharacter* Character)
+{
+	AController* CharacterController = Character ? Character->GetController() : nullptr;
+	if (!CharacterController || IsPlayerControlled())
+	{
+		return;
+	}
+
+	if (!Character->HasKeys())
+	{
+		Character->ShowHint(LOCTEXT("Locked", "Locked. Find the keys."));
+		return;
+	}
+
+	Character->StowForDriving();
+	CharacterController->Possess(this);
+}
+
+void ATakeoverVehiclePawn::ParkForChop()
+{
+	ThrottleInput = 0.f;
+	BrakeInput = 0.f;
+	UChaosWheeledVehicleMovementComponent* Movement = GetChaosMovement();
+	Movement->SetThrottleInput(0.f);
+	Movement->SetBrakeInput(0.f);
+	Movement->SetHandbrakeInput(true);
+}
+
+#undef LOCTEXT_NAMESPACE
