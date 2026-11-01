@@ -50,7 +50,7 @@ Superpowers was built for ordinary software repos. Each override below says why,
 
 The process is in `docs/learning/README.md`. Commands (Claude can start the first two and `/mcp-checkpoint` itself; the rest only run when Rashun types them):
 
-- `/walkthrough [range]`: explain a diff in reading order (data, logic, wiring), pausing for questions. Runs in this session, since a subagent can't hold a conversation.
+- `/walkthrough [range] [written]`: explain a diff in reading order (data, logic, wiring), pausing for questions. Runs in this session, since a subagent can't hold a conversation. With `written`, or when Rashun asks to skip the live one, it saves the walkthrough to `docs/learning/walkthroughs/` instead.
 - `/learning-note [range]`: the `tutor` subagent writes `docs/learning/notes/NNNN-<feature>.md` and updates the concept map and glossary.
 - `/your-turn`: list open `owner: rashun` tasks with hints, no solutions.
 - `/quiz [concept]`: one question at a time from existing notes; weak spots go into the concept map.

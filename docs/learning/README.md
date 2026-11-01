@@ -9,7 +9,7 @@ Each feature runs these steps:
 1. Plan with reasons. A Superpowers spec and plan in `docs/superpowers/`, where every significant choice states what was chosen, the alternatives, why this one wins here, and what would make it wrong later. Rashun approves both.
 2. Build, under the overrides in `CLAUDE.md`.
 3. Verify: automation tests, build output, an MCP read-back, or a playtest for feel work (`docs/playtests/`).
-4. Walkthrough. When the branch is ready to merge, `/walkthrough` explains the diff in reading order: data, then logic, then wiring. Rashun asks questions. He merges only after it.
+4. Walkthrough. When the branch is ready to merge, `/walkthrough` explains the diff in reading order: data, then logic, then wiring. Rashun asks questions. He merges only after it. When he'd rather read it later, `/walkthrough written` saves the same walkthrough to `walkthroughs/` instead; concept statuses move only once he has read it.
 5. Learning note. When the feature introduces a concept that has no note yet, `/learning-note` writes `notes/NNNN-<feature>.md` from `notes/TEMPLATE.md` and updates the concept map and glossary. Features that only reuse known concepts get the walkthrough and a concept map update, no note.
 6. Your turn. Each milestone plan reserves one or two small, real tasks marked `owner: rashun` (label `owner:rashun` on GitHub). Rashun implements them and Claude reviews instead of writing. Good candidates touch the milestone's new concepts: a tuning field on a DataAsset, a new scoring state, a new heat event, a new test case.
 
@@ -23,6 +23,7 @@ At each milestone gate, `/retro` drafts `retros/<milestone>.md`: what was built,
 | [glossary.md](glossary.md) | Plain definitions, each tied to a file in this repo |
 | [notes/TEMPLATE.md](notes/TEMPLATE.md) | Shape of a learning note |
 | `notes/NNNN-<feature>.md` | One note per new concept, numbered in writing order |
+| `walkthroughs/` | Written walkthroughs, one per PR that skipped the live one |
 | `retros/` | Milestone retros |
 | [../playtests/TEMPLATE.md](../playtests/TEMPLATE.md) | Shape of a playtest log entry |
 

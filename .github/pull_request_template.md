@@ -9,7 +9,7 @@
 - [ ] MCP asset changes listed below (or none)
 - [ ] `vendor_content.py verify` run (for level or Content changes), and no third-party files staged
 - [ ] Feel-gate playtest linked (if this touches handling, timing, balance, or AI difficulty)
-- [ ] Walkthrough done (`/walkthrough`)
+- [ ] Walkthrough done (`/walkthrough` live, or written to `docs/learning/walkthroughs/`)
 - [ ] Learning note added, or not needed because no new concept (`/learning-note`)
 - [ ] `CHANGELOG.md` updated
 - [ ] `PLAN.md` updated if scope changed

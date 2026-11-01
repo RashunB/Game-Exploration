@@ -6,6 +6,8 @@ argument-hint: "[commit range, default main...HEAD]"
 
 Walk Rashun through the changes in `$ARGUMENTS` (default: `main...HEAD`). This runs in the main session because it is a conversation; do not hand it to a subagent.
 
+If Rashun asks to skip the live walkthrough, or passes `written`, write it instead: same preparation and stops, saved as `docs/learning/walkthroughs/YYYY-MM-DD-<pr or branch>.md` and modelled on the existing files there. Add a table of what is enforced versus only instructed when the diff touches rules or tooling, note the commit the line numbers refer to, end with follow-ups and the reminder that he merges, and leave concept-map statuses alone until he has read it. Verify every `path:line` before committing.
+
 Prepare:
 
 1. `git log --oneline` and `git diff --stat` for the range. Read the plan in `docs/superpowers/plans/` for this feature if there is one, and `docs/learning/concept-map.md` to see what Rashun already knows.
