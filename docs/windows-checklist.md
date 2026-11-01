@@ -20,12 +20,11 @@ Run these after pulling the branch, in Git Bash from the repo root.
 
 ## GitHub (needs `gh auth status` to pass; any machine)
 
-The cloud session's proxy refuses repository-settings writes, and tag pushes and branch deletions failed from it. Labels, milestones, and issues worked.
+The cloud session's proxy refuses repository-settings writes, and branch deletions failed from it. Labels, milestones, and issues worked.
 
 - [x] Labels, milestones (M0 and M1 closed), M2 issues #1 to #9, tooling issue #10, and learning-note issues #11 to #15. Created from the cloud session on 2026-11-01 with `python .github/scripts/bootstrap_github.py`; rerunning it changes nothing.
 - [ ] Default branch and retired branches: `python .github/scripts/bootstrap_github.py branches`. Sets `main` as default, then deletes `claude/plan-refinement-setup-9mfg9o` and `claude/m1-takeover-core` if `main` contains them.
 - [ ] Protect `main`: `python .github/scripts/bootstrap_github.py protect` (pull requests required, `repo-checks` must pass).
-- [ ] M1 gate tag: `git tag -a m1-gate dab4dd3 -m "M1 gate passed (2026-10-24)" && git push origin m1-gate`.
 
 ## Docs for Rashun to confirm
 

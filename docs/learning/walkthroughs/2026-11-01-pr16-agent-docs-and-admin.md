@@ -101,7 +101,7 @@ Files: `docs/decisions/README.md`; `docs/decisions/0014-agent-plugin-and-skill-s
 
 Watch:
 
-- The proxy refused repository-settings writes, so `main` isn't the default branch yet, the two `claude/*` branches still exist, `main` isn't protected, and the `m1-gate` tag isn't pushed. All four are in `docs/windows-checklist.md`.
+- The proxy refused repository-settings writes, so `main` isn't the default branch yet, the two `claude/*` branches still exist, and `main` isn't protected. All three are in `docs/windows-checklist.md`.
 
 ## Follow-ups
 
