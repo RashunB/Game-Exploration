@@ -1,0 +1,3 @@
+#!/bin/sh
+# Blocks commits that stage third-party Content. See check-staged-content.sh.
+exec sh "$(git rev-parse --show-toplevel)/Tools/githooks/check-staged-content.sh"

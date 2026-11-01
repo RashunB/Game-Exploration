@@ -4,6 +4,9 @@
 *.cmd text eol=crlf
 *.ps1 text eol=crlf
 *.sh text eol=lf
+# Git and Claude Code hooks run under Git Bash on Windows; CRLF breaks their shebang lines
+Tools/githooks/* text eol=lf
+.claude/hooks/* text eol=lf
 
 # Unreal assets
 *.uasset filter=lfs diff=lfs merge=lfs -text
