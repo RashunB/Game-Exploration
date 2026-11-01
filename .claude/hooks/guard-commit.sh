@@ -8,9 +8,14 @@ cd "${CLAUDE_PROJECT_DIR:-.}" || exit 0
 
 command=$(json_field command)
 
-if printf '%s' "$command" | grep -q -E 'git([[:space:]]+-[^[:space:]]+)*[[:space:]]+add([[:space:]]|$)' \
-	&& printf '%s' "$command" | grep -q -E '(^|[[:space:]])(-f|--force|-[a-zA-Z]*f[a-zA-Z]*)([[:space:]]|$)' \
-	&& printf '%s' "$command" | grep -q 'Content'; then
+# Check each simple command on its own, so `git add Content/Takeover/x && rm -f tmp` is not a force-add
+segments=$(printf '%s' "$command" | sed 's/&&/\n/g; s/||/\n/g; s/[;|]/\n/g')
+force_add=$(printf '%s\n' "$segments" \
+	| grep -E '(^|[[:space:]])git([[:space:]]+-[^[:space:]]+)*[[:space:]]+add([[:space:]]|$)' \
+	| grep -E '(^|[[:space:]])(-f|--force|-[a-zA-Z]*f[a-zA-Z]*)([[:space:]]|$)' \
+	| grep 'Content')
+
+if [ -n "$force_add" ]; then
 	echo "Blocked: force-adding under Content/ would stage git-ignored third-party content in a public repo (PLAN.md section 3). Only Content/Takeover/ and the level's __ExternalActors__/__ExternalObjects__ are tracked, and they need no -f." >&2
 	exit 2
 fi
