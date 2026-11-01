@@ -18,6 +18,19 @@ Run these after pulling the branch, in Git Bash from the repo root.
 - [ ] Tutor guard on Windows paths: run `/learning-note 0003-scoring-component-and-config`. The note lands in `docs/learning/notes/`, and the session shows no blocked writes inside `docs/learning/`.
 - [ ] Fresh clone: clone into a new folder, `sh Tools/githooks/install.sh`, `python Tools/VendorContent/vendor_content.py restore`, build the editor target, open the editor, and confirm `L_Greybox` loads and the `Takeover.` tests pass (24 at last count). Delete the extra clone afterwards; it has its own multi-gigabyte build output.
 
+## Core loop POC (added 2026-11-01, branch `poc/core-loop`)
+
+The C++ was written in a cloud session and has never been compiled. Design: `docs/superpowers/specs/2026-11-01-core-loop-poc-design.md`.
+
+- [ ] Full build with the editor closed (new classes and properties; Live Coding can't do it). Fix compile errors before anything else.
+- [ ] Headless tests: `Takeover.Mission.Flow` (10), `Takeover.Chop.Session` (8), and `Takeover.Arena.Ring` (4) pass with the existing 24.
+- [ ] Input, through MCP in `Content/Takeover/Input/`: `IA_Move` and `IA_Look` (Axis2D) and `IA_Interact` (Digital), plus `IMC_OnFoot`. Move: WASD (Swizzle on W/S, Negate on A and S) and the gamepad left stick. Look: mouse XY and the right stick (Negate Y if pitch feels inverted). Interact: E and Gamepad Face Button Left. Set `OnFootContext`, `MoveAction`, `LookAction`, and `InteractAction` on `DA_InputConfig`.
+- [ ] `BP_TakeoverCharacter` (parent `ATakeoverCharacter`) in `Content/Takeover/Blueprints/`. A capsule with no mesh is fine for the POC. Using the Third Person template mannequin makes it third-party content: migrate and `record` it through `Tools/VendorContent`.
+- [ ] `DT_ChopParts` in `Content/Takeover/Data/`, row struct `TakeoverChopPartRow`, imported from `Tools/Data/ChopParts.csv`.
+- [ ] `DA_MissionConfig` (`UMissionConfig`) with `ChopParts` set to `DT_ChopParts`. On `BP_TakeoverGameMode`, set `MissionConfig` and make `BP_TakeoverCharacter` the default pawn.
+- [ ] `L_Greybox`: a greybox house from engine shapes with a `PlayerStart` inside, three to five `ATakeoverKeySpot` actors (give each a `SpotMesh`, such as a cube drawer), and `BP_HeroCar` parked outside. On `BP_HeroCar`, move the `DriverDoor` component to the driver's side.
+- [ ] Play the loop in PIE: search spots, find the keys, get in, drive into the crowd ring, perform until the timer ends, strip parts in the chop menu (mouse and gamepad), sell and finish. Money and rep show top right. `takeover.Mission.Skip` and `takeover.Mission.Restart` are the debug commands. Log the run in `docs/playtests/`.
+
 ## GitHub (needs `gh auth status` to pass; any machine)
 
 The cloud session's proxy refuses repository-settings writes, and branch deletions failed from it. Labels, milestones, and issues worked.

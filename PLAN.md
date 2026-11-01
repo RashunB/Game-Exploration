@@ -260,6 +260,7 @@ Estimates assume one developer full-time with Claude doing most of the code. Par
    - Not yet built: a physical burnout. Scoring detects throttle plus brake, but with default wheel setup Chaos brakes every wheel, so the rears probably won't spin. Check in the first drive, and if so, brake only the front axle while both are held.
    - Gate passed (2026-10-24): the user confirmed the takeover is fun and chose the drift event for the finale. Tire smoke, skid marks, and the burnout check carry over into M2. Playtest record (reconstructed): `docs/playtests/2026-10-24-m1-gate.md`.
 3. M2, week 5. Mission subsystem, loop state, progress subsystem and save game, heat, raid timer, HUD (heat meter, score, objective text, minimap).
+   - Core loop first (2026-11-01, user's call): before heat and police, a proof of concept on `poc/core-loop` runs BreakIn (on foot, find the keys at a random spot, get in the car), Getaway as a plain drive to the arena, a timed Takeover that converts score to rep, and a menu-based Chop that pays per part, all through `UMissionSubsystem`. Heat, the raid timer, failure rewards, saving, and the HUD follow on top of it. Design and the calls made: `docs/superpowers/specs/2026-11-01-core-loop-poc-design.md`.
    - Acceptance:
      - A full loop runs in `L_Greybox` through `UMissionSubsystem`: Idle, BreakIn, Getaway, Takeover, Chop, Dump, Complete. Every phase but Takeover is a stub that completes on a debug command until M3 to M5. Phase transitions are covered by automation tests.
      - Heat: 0 to 100 with 4 tiers and hysteresis. Crowd hits and takeover duration add heat, and heat decays while unseen (line-of-sight stub until M4). Tier changes, hysteresis, and decay are covered by tests.
@@ -286,6 +287,8 @@ See `AGENTS.md` and `CLAUDE.md`. Update this plan and `CHANGELOG.md` when scope 
 - Art direction: realistic (City Sample look) or stylized. Affects the art pass and disk use.
 - Ambient traffic during getaway and dump: none for EA, or simple spline traffic. Traffic adds time to M4.
 - Crash reporting provider. Any third-party SDK is ask-first. Decide before M6.
+- After a raid, does the player escape with police on them before the chop shop (the user raised this on 2026-11-01)? That would add an escape phase after Takeover, separate from the Getaway before it.
+- How a takeover ends when police never arrive. The POC uses a fixed timer; the M5 drift event may replace it.
 - Early Access price point.
 - Is Unreal already installed, and on what hardware (CPU, GPU, RAM, free disk)? Determines whether City Sample Crowd and Buildings are viable.
 
@@ -298,6 +301,7 @@ Resolved:
 
 ## 12. Revision history
 
+- 2026-11-01: The core loop comes before heat and police. A POC branch builds break-in, the drive to the arena, a timed takeover, and the chop menu on `UMissionSubsystem`; see the M2 entry. Added two open questions about how a takeover ends.
 - 2026-10-27: Agent docs and repo administration. `main` is the default branch with M0 and M1 on it. Working rules split into `AGENTS.md` (any agent) and `CLAUDE.md` (Claude Code, imports `AGENTS.md`). Added the plugin and skill stack (Superpowers, 26 quodsoler Unreal skills) with Unreal-specific overrides, the learning cycle (`docs/learning/`), ADRs 0001 to 0014 linked from the sections they shape, playtest logs, issue and PR templates, CI repo checks, and git and Claude Code hooks that block third-party Content commits. Decided: the full Superpowers plugin on every model, one or two your-turn tasks per milestone, and learning notes only for features that introduce a new concept. Folder layout and testing sections updated.
 - 2026-10-24: Third-party content (City Sample, Fab, vehicle template) leaves git, because the repo is public. `Tools/VendorContent` restores it from the staging project and the engine install using a committed manifest. Removed from the unpushed M1 history before the first push.
 - 2026-10-24: M1 gate passed, drift event chosen. M2 acceptance criteria added. Failure reward rule and minimap approach resolved.
